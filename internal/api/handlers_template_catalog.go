@@ -13,6 +13,7 @@ var pageTemplates = []string{
 	"settings",
 	"settings_2fa",
 	"calendar_feed_reveal",
+	"api_key_reveal",
 	"auth_2fa",
 	"not_found",
 	"privacy",

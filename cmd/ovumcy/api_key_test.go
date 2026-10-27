@@ -226,3 +226,109 @@ func TestCSRFSkipForAPIKeyIsLimitedToListedRoutes(t *testing.T) {
 		t.Fatalf("POST /users/current/webhook with a bearer = %d %s, want the CSRF refusal", status, body)
 	}
 }
+
+// TestAPIKeySettingsFlowGeneratesRevealsOnceAndRevokes drives the owner's side
+// of the feature through the production stack with a real session: the settings
+// page renders the card, generate seals the key and points at the reveal, the
+// reveal page shows it exactly once, the key then works as a bearer, and revoke
+// turns it off. The earlier tests mint the key directly and so cannot see a
+// page or a route that was never wired up.
+func TestAPIKeySettingsFlowGeneratesRevealsOnceAndRevokes(t *testing.T) {
+	handler, database := newRateLimitTestHandlerAndDB(t)
+	app := newCalendarFeedTestApp(t, handler, 100000)
+	authCookie := loginOnProductionStack(t, app, database, "api-key-flow@example.com")
+
+	get := func(target string, cookies string) (*http.Response, string) {
+		request := httptest.NewRequest(http.MethodGet, target, nil)
+		request.Header.Set("Cookie", cookies)
+		response, err := app.Test(request, testConfigNoTimeout)
+		if err != nil {
+			t.Fatalf("GET %s: %v", target, err)
+		}
+		defer func() { _ = response.Body.Close() }()
+		return response, string(mustReadAll(t, response))
+	}
+
+	settings, body := get("/settings", authCookie)
+	if settings.StatusCode != http.StatusOK || !strings.Contains(body, `id="settings-api-key"`) {
+		t.Fatalf("GET /settings = %d, want 200 with the API key card", settings.StatusCode)
+	}
+	csrfCookie := testResponseCookie(settings.Cookies(), "ovumcy_csrf")
+	match := csrfTokenMetaPattern.FindStringSubmatch(body)
+	if csrfCookie == nil || len(match) < 2 {
+		t.Fatal("the settings page carried no CSRF credentials")
+	}
+	session := authCookie + "; " + csrfCookie.Name + "=" + csrfCookie.Value
+
+	send := func(method string, target string, payload string, cookies string) (*http.Response, string) {
+		var reader io.Reader
+		if payload != "" {
+			reader = strings.NewReader(payload)
+		}
+		request := httptest.NewRequest(method, target, reader)
+		request.Header.Set("Cookie", cookies)
+		request.Header.Set("Accept", "application/json")
+		request.Header.Set("X-CSRF-Token", match[1])
+		if payload != "" {
+			request.Header.Set("Content-Type", "application/json")
+		}
+		response, err := app.Test(request, testConfigNoTimeout)
+		if err != nil {
+			t.Fatalf("%s %s: %v", method, target, err)
+		}
+		defer func() { _ = response.Body.Close() }()
+		return response, string(mustReadAll(t, response))
+	}
+
+	if response, body := send(http.MethodPost, "/api/v1/users/current/api-key", `{"scope":"admin"}`, session); response.StatusCode != http.StatusBadRequest {
+		t.Fatalf("generate with an unknown scope = %d, want 400: %s", response.StatusCode, body)
+	}
+
+	generated, body := send(http.MethodPost, "/api/v1/users/current/api-key", `{"scope":"period"}`, session)
+	if generated.StatusCode != http.StatusOK || !strings.Contains(body, `"next_path":"/settings/api-key"`) {
+		t.Fatalf("generate = %d %s, want 200 pointing at the reveal", generated.StatusCode, body)
+	}
+	if strings.Contains(body, "ovk_") {
+		t.Fatalf("the generate response carried the key: %s", body)
+	}
+	revealCookie := testResponseCookie(generated.Cookies(), "ovumcy_api_key")
+	if revealCookie == nil {
+		t.Fatal("generate sealed no reveal cookie")
+	}
+	withReveal := session + "; " + revealCookie.Name + "=" + revealCookie.Value
+
+	reveal, body := get("/settings/api-key", withReveal)
+	if reveal.StatusCode != http.StatusOK {
+		t.Fatalf("GET /settings/api-key = %d, want 200: %s", reveal.StatusCode, body)
+	}
+	key := regexp.MustCompile(`ovk_[A-Z2-9]{40}`).FindString(body)
+	if key == "" {
+		t.Fatalf("the reveal page did not show the key: %s", body)
+	}
+
+	// Shown once: replaying the same sealed cookie lands back on /settings.
+	replay, _ := get("/settings/api-key", withReveal)
+	if replay.StatusCode != http.StatusSeeOther || replay.Header.Get("Location") != "/settings" {
+		t.Fatalf("replaying the reveal = %d -> %q, want 303 to /settings", replay.StatusCode, replay.Header.Get("Location"))
+	}
+
+	if status, body, _ := keyRequest(t, app, key, http.MethodGet, "/api/v1/stats/overview", ""); status != http.StatusOK {
+		t.Fatalf("the revealed key = %d, want 200: %s", status, body)
+	}
+
+	if _, body := get("/settings", session); !strings.Contains(body, `id="settings-api-key"`) || strings.Contains(body, key) {
+		t.Fatal("the settings page must show the card and never the key")
+	}
+
+	// A key cannot manage keys.
+	if status, _, _ := keyRequest(t, app, key, http.MethodDelete, "/api/v1/users/current/api-key", ""); status < http.StatusBadRequest {
+		t.Fatalf("an API key revoked itself or its owner's key: %d", status)
+	}
+
+	if revoked, body := send(http.MethodDelete, "/api/v1/users/current/api-key", "", session); revoked.StatusCode != http.StatusOK {
+		t.Fatalf("revoke = %d, want 200: %s", revoked.StatusCode, body)
+	}
+	if status, _, _ := keyRequest(t, app, key, http.MethodGet, "/api/v1/stats/overview", ""); status != http.StatusUnauthorized {
+		t.Fatalf("a revoked key = %d, want 401", status)
+	}
+}

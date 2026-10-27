@@ -116,6 +116,27 @@ components:
         Sealed session cookie issued by `POST /api/v1/sessions` (or by completing
         the OIDC sign-in flow). Verified against `users.auth_session_version` on
         every request. See [SECURITY.md](../SECURITY.md#cookies).
+    apiKey:
+      type: http
+      scheme: bearer
+      description: |
+        Per-account API key, sent as `Authorization: Bearer ovk_…`. The owner creates
+        it under **Settings → API key** and it is shown exactly once. A key carries one
+        of two scopes, fixed when it is minted:
+
+        - `read` — the read operations marked with this scheme.
+        - `period` — the same reads plus `POST /api/v1/days/{date}/cycle-start` and
+          `PATCH /api/v1/days/{date}` limited to the period fields (`is_period`,
+          `flow` and their `base_` twins).
+
+        A key is accepted on exactly those operations; on every other route it is
+        refused with `403`. A request that carries a bearer credential is
+        authenticated by the key alone — the session cookie is never consulted and
+        there is no fallback to it — and needs **no CSRF token** and sets **no
+        cookie**. A key that is unknown, revoked, replaced or malformed answers
+        `401` with `WWW-Authenticate: Bearer`, identically for all four. Only
+        a keyed MAC of the key is stored. See
+        [SECURITY.md](../SECURITY.md).
     csrfToken:
       type: apiKey
       in: header
@@ -562,6 +583,55 @@ components:
         status:
           type: string
           enum: [calendar_feed_revoked]
+      additionalProperties: false
+
+    ApiKeyGenerateRequest:
+      type: object
+      required: [scope]
+      properties:
+        scope:
+          type: string
+          enum: [read, period]
+          description: |
+            `read` reads cycle data only. `period` adds marking a cycle start and
+            setting or clearing the period flag and flow on a day. The scope is fixed
+            at mint: to change it, generate a new key, which replaces the old one.
+      additionalProperties: false
+
+    ApiKeyRevealResponse:
+      type: object
+      description: |
+        JSON response for an API key generate. The key is a **write-only secret**: it
+        is NEVER carried in this body (nor in any query string, redirect target or
+        log). It is sealed into a one-time cookie (`ovumcy_api_key`) and shown exactly
+        once on the `next_path` page.
+      required: [ok, scope, next_step, next_path]
+      properties:
+        ok:
+          type: boolean
+          enum: [true]
+        scope:
+          type: string
+          enum: [read, period]
+        next_step:
+          type: string
+          enum: [api_key_reveal]
+        next_path:
+          type: string
+          description: Path to the one-time reveal page. Carries no secret itself.
+          example: "/settings/api-key"
+      additionalProperties: false
+
+    ApiKeyRevoked:
+      type: object
+      required: [ok, status]
+      properties:
+        ok:
+          type: boolean
+          enum: [true]
+        status:
+          type: string
+          enum: [api_key_revoked]
       additionalProperties: false
 
     ImportResult:
@@ -2462,6 +2532,11 @@ paths:
   # =========================================================================
   /api/v1/days:
     get:
+      security:
+        - sessionCookie: []
+          csrfToken: []
+        - apiKey: []
+      x-api-key-scope: read
       tags: [days]
       summary: List daily log entries in a date range.
       description: |
@@ -2534,6 +2609,11 @@ paths:
     parameters:
       - $ref: '#/components/parameters/DateParam'
     get:
+      security:
+        - sessionCookie: []
+          csrfToken: []
+        - apiKey: []
+      x-api-key-scope: read
       tags: [days]
       summary: Read a single day's entry (owner only).
       description: |
@@ -2560,6 +2640,11 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '429': { $ref: '#/components/responses/RateLimited' }
     head:
+      security:
+        - sessionCookie: []
+          csrfToken: []
+        - apiKey: []
+      x-api-key-scope: read
       tags: [days]
       summary: Check whether the day holds any entered data (owner only).
       description: |
@@ -2639,6 +2724,11 @@ paths:
               schema: { type: string }
         '429': { $ref: '#/components/responses/RateLimited' }
     patch:
+      security:
+        - sessionCookie: []
+          csrfToken: []
+        - apiKey: []
+      x-api-key-scope: period
       tags: [days]
       summary: Update some fields of a day's entry (owner only).
       description: |
@@ -2781,6 +2871,11 @@ paths:
 
   /api/v1/days/{date}/cycle-start:
     post:
+      security:
+        - sessionCookie: []
+          csrfToken: []
+        - apiKey: []
+      x-api-key-scope: period
       tags: [days]
       summary: Mark the day as the start of a new cycle (owner only).
       description: |
@@ -2971,6 +3066,11 @@ paths:
   # =========================================================================
   /api/v1/stats/overview:
     get:
+      security:
+        - sessionCookie: []
+          csrfToken: []
+        - apiKey: []
+      x-api-key-scope: read
       tags: [stats]
       summary: Current cycle statistics for the signed-in user.
       responses:
@@ -3407,6 +3507,104 @@ paths:
               example:
                 error: "failed to update webhook settings"
                 error_detail: { key: "failed to update webhook settings", category: "internal", target: "global" }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /api/v1/users/current/api-key:
+    post:
+      tags: [settings]
+      summary: Generate (or replace) the API key (owner only).
+      description: |
+        Mints an API key with the chosen scope for the owner. If a key already exists
+        this replaces it and the previous key stops working immediately. The key is a
+        **write-only secret**: it is NEVER returned in the response body, a query
+        string, a redirect target or any log. It is sealed into a one-time cookie and
+        revealed exactly once on the reveal page; JSON clients receive only the
+        outcome plus `next_path` to it (see `ApiKeyRevealResponse`). Does NOT bump
+        `auth_session_version`. This operation is session-only: an API key cannot
+        mint, replace or revoke keys. The key is also revoked by a password reset,
+        a recovery-code regeneration and a data wipe.
+      security:
+        - sessionCookie: []
+          csrfToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ApiKeyGenerateRequest' }
+          application/x-www-form-urlencoded:
+            schema: { $ref: '#/components/schemas/ApiKeyGenerateRequest' }
+      responses:
+        '200':
+          description: Key generated. JSON clients follow `next_path` to the one-time reveal.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiKeyRevealResponse' }
+        '303':
+          description: "Browser redirect to the one-time reveal page (`/settings/api-key`) when `Accept: application/json` is not set."
+        '400':
+          description: The scope is missing or is not `read` or `period`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
+              example:
+                error: "invalid api key scope"
+                error_detail: { key: "invalid api key scope", category: "validation", target: "global" }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: |
+            The caller is not the owner, or the request was refused before the handler runs
+            (CSRF) with the `csrf_refused` key.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
+              example:
+                error: "csrf_refused"
+                error_detail: { key: "csrf_refused", category: "forbidden", target: "global" }
+        '500':
+          description: Key generation or persistence failed. Carries no key.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
+              example:
+                error: "failed to update api key"
+                error_detail: { key: "failed to update api key", category: "internal", target: "global" }
+        '429': { $ref: '#/components/responses/RateLimited' }
+    delete:
+      tags: [settings]
+      summary: Revoke the API key (owner only).
+      description: |
+        Turns the owner's key off. Anything using it is refused with `401` from the
+        next request. Idempotent. Carries no secret. Session-only, like generate.
+      security:
+        - sessionCookie: []
+          csrfToken: []
+      responses:
+        '200':
+          description: Key revoked.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiKeyRevoked' }
+        '303':
+          description: "Browser redirect back to `/settings` when `Accept: application/json` is not set."
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: |
+            The caller is not the owner, or the request was refused before the handler runs
+            (CSRF) with the `csrf_refused` key.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
+              example:
+                error: "csrf_refused"
+                error_detail: { key: "csrf_refused", category: "forbidden", target: "global" }
+        '500':
+          description: Persistence failed.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
+              example:
+                error: "failed to update api key"
+                error_detail: { key: "failed to update api key", category: "internal", target: "global" }
         '429': { $ref: '#/components/responses/RateLimited' }
 
   /api/v1/users/current/calendar-feed:
