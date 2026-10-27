@@ -168,6 +168,7 @@ func settingsFormBackPath(path string) (string, bool) {
 		"/api/v1/users/current/webhook",
 		"/api/v1/users/current/calendar-feed",
 		"/api/v1/users/current/calendar-feed/rotate",
+		"/api/v1/users/current/api-key",
 		"/api/v1/users/current/reminders",
 		"/api/v1/users/current/interface",
 		"/api/v1/users/current/tracking",

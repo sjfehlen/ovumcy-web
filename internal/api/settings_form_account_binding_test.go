@@ -256,6 +256,12 @@ func settingsWriteCases(fixture dayFormAccountFixture) []settingsWriteCase {
 		formCase("DELETE /api/v1/users/current/calendar-feed", "the calendar feed revocation", func(int) url.Values {
 			return url.Values{}
 		}),
+		formCase("POST /api/v1/users/current/api-key", "the API key generation", func(int) url.Values {
+			return url.Values{"scope": {"read"}}
+		}),
+		formCase("DELETE /api/v1/users/current/api-key", "the API key revocation", func(int) url.Values {
+			return url.Values{}
+		}),
 		formCase("POST /api/v1/symptoms", "the new symptom form", func(seq int) url.Values {
 			return url.Values{"name": {fmt.Sprintf("Stale tab %d", seq)}, "icon": {"✨"}}
 		}),
@@ -617,6 +623,7 @@ func TestEveryRenderedSettingsWriteCarriesTheAccountBinding(t *testing.T) {
 		form         url.Values
 	}{
 		{http.MethodPost, "/api/v1/users/current/webhook", url.Values{"webhook_url": {"https://ntfy.example.test/markup"}, "webhook_enabled": {"true"}, "webhook_notify_period": {"true"}}},
+		{http.MethodPost, "/api/v1/users/current/api-key", url.Values{"scope": {"read"}}},
 		{http.MethodPost, "/api/v1/symptoms", url.Values{"name": {"Markup active"}, "icon": {"✨"}}},
 		{http.MethodPost, "/api/v1/symptoms", url.Values{"name": {"Markup archived"}, "icon": {"✨"}}},
 	} {

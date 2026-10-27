@@ -204,6 +204,15 @@ var sealedCookieExpiryProbes = map[string]sealedCookieExpiryProbe{
 			return strings.TrimSpace(handler.readCalendarFeedRevealState(c, sealedExpirySweepUserID).FeedURL) != ""
 		},
 	},
+	apiKeyRevealCookieName: {
+		mint: func(handler *Handler, c fiber.Ctx) error {
+			return handler.setAPIKeyRevealCookie(
+				c, sealedExpirySweepUserID, "ovk_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", "read", false)
+		},
+		honours: func(handler *Handler, c fiber.Ctx) bool {
+			return strings.TrimSpace(handler.readAPIKeyRevealState(c, sealedExpirySweepUserID).Key) != ""
+		},
+	},
 	recoveryCodeCookieName: {
 		mint: func(handler *Handler, c fiber.Ctx) error {
 			return handler.setRecoveryCodeIssuanceCookie(

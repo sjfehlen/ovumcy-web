@@ -469,6 +469,15 @@ func openAPIResponseSchemaGuardTable() []openAPIResponseSchemaGuardEntry {
 			requireSchemaGuardStatus(t, "seed POST /api/v1/users/current/webhook", status, body, http.StatusOK)
 			return owner.send(t, http.MethodDelete, "/api/v1/users/current/webhook", nil)
 		}},
+		{operation: "POST /api/v1/users/current/api-key", drive: func(t *testing.T) (int, []byte) {
+			return newSchemaGuardOwner(t).send(t, http.MethodPost, "/api/v1/users/current/api-key", map[string]string{"scope": "read"})
+		}},
+		{operation: "DELETE /api/v1/users/current/api-key", drive: func(t *testing.T) (int, []byte) {
+			owner := newSchemaGuardOwner(t)
+			status, body := owner.send(t, http.MethodPost, "/api/v1/users/current/api-key", map[string]string{"scope": "read"})
+			requireSchemaGuardStatus(t, "seed POST /api/v1/users/current/api-key", status, body, http.StatusOK)
+			return owner.send(t, http.MethodDelete, "/api/v1/users/current/api-key", nil)
+		}},
 		{operation: "POST /api/v1/users/current/calendar-feed", drive: func(t *testing.T) (int, []byte) {
 			return newSchemaGuardOwner(t).send(t, http.MethodPost, "/api/v1/users/current/calendar-feed", nil)
 		}},

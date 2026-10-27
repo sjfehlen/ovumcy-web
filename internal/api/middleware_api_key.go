@@ -78,12 +78,12 @@ func bearerAPIKey(c fiber.Ctx) (string, bool) {
 }
 
 // matchAPIKeyRoute finds the table entry for a request, or reports none. It
-// decides on the routing-normalised path and refuses any spelling the router
+// decides on the routing-normalised paths it is handed and refuses any spelling the router
 // might rewrite before matching (dot or empty segments), the same posture the
 // onboarding gate takes: an unusual path is never granted what a plain one is.
-func matchAPIKeyRoute(method string, wirePath string, routedPath string) (apiKeyRoute, bool) {
-	routed := httpx.RoutingNormalizedPath(routedPath)
-	if httpx.RoutingNormalizedPath(wirePath) != routed || path.Clean(routed) != routed {
+func matchAPIKeyRoute(method string, wirePath string, routed string) (apiKeyRoute, bool) {
+	// Both paths arrive already routing-normalised (see apiKeyRouteForRequest).
+	if wirePath != routed || path.Clean(routed) != routed {
 		return apiKeyRoute{}, false
 	}
 	segments := strings.Split(strings.TrimPrefix(routed, "/"), "/")
@@ -106,7 +106,9 @@ func matchAPIKeyRoute(method string, wirePath string, routedPath string) (apiKey
 }
 
 func apiKeyRouteForRequest(c fiber.Ctx) (apiKeyRoute, bool) {
-	return matchAPIKeyRoute(c.Method(), string(c.Request().URI().PathOriginal()), c.Path())
+	wire := httpx.RoutingNormalizedPath(string(c.Request().URI().PathOriginal()))
+	routed := httpx.RoutingNormalizedPath(c.Path())
+	return matchAPIKeyRoute(c.Method(), wire, routed)
 }
 
 // IsAPIKeyRequest reports whether the request is a bearer-key request for a

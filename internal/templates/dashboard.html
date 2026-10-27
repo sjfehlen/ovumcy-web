@@ -143,10 +143,6 @@
               data-dashboard-more-cycles-bridge
               data-more-cycles-bridge-key="dashboard.fertile_window_after_cycle_floor">{{printf (tn .Messages .Lang "dashboard.fertile_window_after_cycle_floor" cycleFloor) cycleFloor}}</span>
             {{end}}
-            {{if .CycleHero.Approximate}}
-            <span class="dashboard-status-separator" aria-hidden="true">·</span>
-            <span class="dashboard-status-item journal-muted" data-dashboard-estimate-qualifier>{{t .Messages "dashboard.cycle_hero_estimated"}}</span>
-            {{end}}
           {{end}}
         </p>
 
@@ -262,7 +258,10 @@
       {{end}}
 
       {{if .IsOwner}}
-      <p class="dashboard-prediction-disclaimer text-sm" data-dashboard-prediction-disclaimer>{{t .Messages "medical.disclaimer"}}</p>
+      {{/* One quiet footnote instead of two stacked lines: the qualifier names why
+           the cycle map is approximate, the disclaimer says what an estimate is
+           not. Both stay on the page, as the medical-safety invariant requires. */}}
+      <p class="dashboard-prediction-disclaimer journal-muted text-xs" data-dashboard-prediction-disclaimer>{{t .Messages "medical.disclaimer"}}{{if .CycleHero.Approximate}} <span data-dashboard-estimate-qualifier>{{t .Messages "dashboard.cycle_hero_estimated"}}</span>{{end}}</p>
       {{end}}
 
       {{if .HasPredictionFactorHint}}
@@ -308,6 +307,7 @@
             data-entry-date-choice="yesterday"
             data-entry-date="{{.Yesterday}}"
             data-entry-date-empty="{{if .ShowYesterdayJump}}true{{else}}false{{end}}">{{t .Messages "dashboard.fill_yesterday"}}</a>
+          <a href="/calendar?edit=1" class="btn-soft text-sm">{{t .Messages "dashboard.log_earlier_day"}}</a>
         </div>
         {{end}}
       </div>
@@ -493,6 +493,8 @@
 
       {{if .ShowMissedDaysLink}}
       <p class="journal-muted mt-4 text-sm"><a href="/calendar?month={{.MissedDayMonth}}&day={{.MissedDay}}&edit=1" class="inline-link">{{t .Messages "dashboard.fill_missed_days"}}</a></p>
+      {{else}}
+      <p class="journal-muted mt-4 text-sm">{{t .Messages "dashboard.forgot_period_hint"}} <a href="/calendar?edit=1" class="inline-link">{{t .Messages "dashboard.forgot_period_link"}}</a></p>
       {{end}}
 
       {{if .AllowManualCycleStart}}
