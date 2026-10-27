@@ -1,3 +1,7 @@
+    # Upstream only. This publishes ghcr.io/<repo>:main with Docker Hub mirroring,
+    # signing and an alias-ordering check, which the sjfehlen fork does not use:
+    # its own fork-image.yml builds and pushes the same tag, and the two would
+    # fight over it (this job refuses an image that lacks the revision label).
 name: CI
 
 on:
@@ -2228,7 +2232,8 @@ jobs:
       && needs.e2e.result == 'success'
       && needs.e2e-postgres-smoke.result == 'success'
       && needs.image-smoke.result == 'success'
-      && needs.e2e-cross-browser.result == 'success' }}
+      && needs.e2e-cross-browser.result == 'success'
+      && github.repository == 'ovumcy/ovumcy-web' }}
     # A caller cannot grant a called workflow more than it holds, so this must
     # match the permissions the publish job declares — plus `actions: read`,
     # for the tag gate that workflow runs ahead of the publish.
