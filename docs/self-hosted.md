@@ -667,7 +667,7 @@ in another, because the limit is reached by the cookies that browser has accumul
 Clearing them fixes it immediately, which is also how you confirm the diagnosis.
 
 The whole **head** of a request — start line plus every header, cookies included — must fit in a
-4 KB read buffer.
+16 KB read buffer (raised from upstream's 4 KB in this fork).
 
 A normal signed-in request carries about **450 B** of Ovumcy cookies (measured from the running app
 on 2026-07-25, against v1.9.2: `ovumcy_auth` 350 B, `ovumcy_csrf` 55 B, plus the language and

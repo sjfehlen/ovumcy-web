@@ -18,7 +18,7 @@ import (
 )
 
 // A request head — start line plus every header, cookies included — must fit
-// fasthttp's read buffer (4 KB by default). Ovumcy's own cookies do not fill it:
+// the server read buffer (16 KB in this fork). Ovumcy's own cookies do not fill it:
 // ~450 B on a normal signed-in request, measured from the running app. Summing
 // every cookie the app can define reaches ~2.9 KB, but those states are mutually
 // exclusive by lifecycle, so a real flow never approaches the limit. A domain
@@ -58,7 +58,7 @@ func TestOversizedRequestHeadIsRejectedVisibly(t *testing.T) {
 
 	var body string
 	var headers http.Header
-	status, body, headers = requestWithCookieOfSize(t, address, 5000)
+	status, body, headers = requestWithCookieOfSize(t, address, 20000)
 	if status != http.StatusRequestHeaderFieldsTooLarge {
 		t.Fatalf("expected 431 for a head past the read buffer, got %d (body %q)", status, body)
 	}
@@ -104,14 +104,14 @@ func TestOversizedRequestHeadIsRejectedVisibly(t *testing.T) {
 }
 
 // The test above measures the limit through whatever default the pinned Fiber
-// release ships, so on a release whose default equals the documented 4 KB it
+// release ships, so on a release whose default equals the documented 16 KB it
 // cannot tell a pinned buffer from an unpinned one. This one can: the operator
-// documentation states 4 KB, and a framework default that moves (Fiber 3.6
+// documentation states 16 KB, and a framework default that moves (Fiber 3.6
 // doubled it) must not move the limit with it.
 func TestFiberConfigPinsTheDocumentedReadBuffer(t *testing.T) {
 	t.Parallel()
 
-	const documentedRequestHeadBytes = 4096
+	const documentedRequestHeadBytes = 16384
 	if got := fiberConfig(proxySettings{}, nil).ReadBufferSize; got != documentedRequestHeadBytes {
 		t.Fatalf("fiberConfig ReadBufferSize = %d, want the documented %d — an unset value takes the framework default", got, documentedRequestHeadBytes)
 	}

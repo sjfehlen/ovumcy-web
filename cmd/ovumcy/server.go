@@ -55,7 +55,7 @@ const (
 	// here rather than left to the framework default, which a Fiber release
 	// may change (3.6 doubled it to 8 KB): the limit is a documented operator
 	// fact (docs/self-hosted.md), not an implementation detail.
-	maxRequestHeadBytes = 4096
+	maxRequestHeadBytes = 16384
 
 	// staticAssetMaxAgeSeconds is the Cache-Control max-age (1 hour) fiber sets
 	// on /static responses. Assets are cache-busted by a ?v=<build revision>
