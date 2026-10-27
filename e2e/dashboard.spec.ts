@@ -23,6 +23,12 @@ import { setRequestTimezoneFromBrowser } from './support/timezone-helpers';
 import { checkStyledControl } from './support/form-helpers';
 import { everyLocaleText, localeText } from './support/locale-helpers';
 
+// At phone width the journal is a sheet the + button opens; from sm up it is inline.
+async function openMobileLogSheet(page: Page): Promise<void> {
+  await page.locator('.dashboard-fab').click();
+  await expect(page.locator('#dashboard-log')).toBeVisible();
+}
+
 async function registerOwnerOnDashboard(page: Page, prefix: string): Promise<void> {
   const creds = createCredentials(prefix);
 
@@ -342,6 +348,7 @@ test.describe('Dashboard: today editor', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.reload();
     await expect(page).toHaveURL(/\/dashboard$/);
+    await openMobileLogSheet(page);
 
     const lastSymptom = page
       .locator('fieldset[data-dashboard-section="symptoms"] label.choice-option:visible')
@@ -357,6 +364,7 @@ test.describe('Dashboard: today editor', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.reload();
     await expect(page).toHaveURL(/\/dashboard$/);
+    await openMobileLogSheet(page);
 
     const grid = page.locator('fieldset[data-dashboard-section="symptoms"] .symptom-grid').first();
     const columns = await grid.evaluate(
@@ -385,6 +393,7 @@ test.describe('Dashboard: today editor', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.reload();
     await expect(page).toHaveURL(/\/dashboard$/);
+    await openMobileLogSheet(page);
 
     const picker = page.locator('[data-mood-picker]').first();
     await expect(picker).toBeVisible();
@@ -548,6 +557,7 @@ test.describe('Dashboard: today editor', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.reload();
     await expect(page).toHaveURL(/\/dashboard$/);
+    await openMobileLogSheet(page);
 
     const clearButton = clearTodayButton(page);
     await clearButton.scrollIntoViewIfNeeded();

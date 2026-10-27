@@ -66,6 +66,7 @@ type DashboardViewData struct {
 	Stats                             CycleStats
 	CycleContext                      DashboardCycleContext
 	CycleHero                         DashboardCycleHero
+	Overview                          DashboardOverview
 	ReminderBanner                    DashboardReminderBanner
 	Today                             time.Time
 	Yesterday                         time.Time
@@ -219,10 +220,13 @@ func (service *DashboardViewService) BuildDashboardViewData(ctx context.Context,
 	confirmedStats, publishedStats, movedWindow := ConfirmedAndOverviewStats(user, logs, stats, today, location)
 	cycleContext.MovedWindow = movedWindow
 
+	cycleHero := BuildDashboardCycleHero(user, confirmedStats, cycleContext, dashboardCycleHeroInput{Logs: logs, Today: today, Location: location})
+
 	return DashboardViewData{
 		Stats:                             publishedStats,
 		CycleContext:                      cycleContext,
-		CycleHero:                         BuildDashboardCycleHero(user, confirmedStats, cycleContext, dashboardCycleHeroInput{Logs: logs, Today: today, Location: location}),
+		CycleHero:                         cycleHero,
+		Overview:                          BuildDashboardOverview(cycleContext, cycleHero, logs, today, location),
 		ReminderBanner:                    reminderBanner,
 		Today:                             today,
 		Yesterday:                         yesterday,

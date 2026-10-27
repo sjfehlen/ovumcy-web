@@ -1,6 +1,66 @@
 {{define "content"}}
 <section class="space-y-6">
   <h1 class="sr-only" data-title-key="nav.dashboard">{{t .Messages "nav.dashboard"}}</h1>
+  {{if .IsOwner}}
+  {{/* The overview: the countdown, the week and the cycle ring. It adds no claim of
+       its own: every value is read off the same published context the status card
+       below uses, so a prediction that card withholds is withheld here too. */}}
+  <section id="dashboard-top" class="dashboard-overview" aria-label="{{t .Messages "dashboard.overview"}}">
+    <div class="card dashboard-hero">
+      <div class="dashboard-hero-ring">
+        {{if .Overview.Countdown.Visible}}
+          {{if .Overview.Countdown.Today}}
+          <p class="dashboard-hero-sentence">{{t .Messages "dashboard.hero.period_today"}}</p>
+          {{else}}
+          <p class="dashboard-hero-number">{{if .Overview.Countdown.IsRange}}{{.Overview.Countdown.Min}}–{{.Overview.Countdown.Max}}{{else}}{{.Overview.Countdown.Min}}{{end}}</p>
+          <p class="dashboard-hero-unit">{{tn .Messages .Lang "dashboard.hero.countdown_unit" .Overview.Countdown.Max}}</p>
+          {{end}}
+        {{else if gt .Stats.CurrentCycleDay 0}}
+        <p class="dashboard-hero-number">{{if .CycleDataStale}}~{{end}}{{.Stats.CurrentCycleDay}}</p>
+        <p class="dashboard-hero-unit">{{t .Messages "dashboard.hero.cycle_day_unit"}}</p>
+        {{else}}
+        <p class="dashboard-hero-sentence">{{.NoDataLabel}}</p>
+        {{end}}
+        <a href="#dashboard-log" class="dashboard-hero-action">{{t .Messages "dashboard.hero.log_period"}}</a>
+      </div>
+    </div>
+
+    <div class="card dashboard-week" role="group" aria-label="{{t .Messages "dashboard.week.title"}}">
+      {{range .Overview.Week}}
+      <a
+        href="/calendar?month={{printf "%.7s" .ISODate}}&day={{.ISODate}}&edit=1"
+        class="dashboard-week-day{{if .IsToday}} dashboard-week-day-today{{end}}{{if .IsPeriodLogged}} dashboard-week-day-period{{else if .IsPeriodPredicted}} dashboard-week-day-predicted{{else if .IsStartWindow}} dashboard-week-day-window{{end}}"
+        {{if .IsToday}}aria-current="date"{{end}}
+        aria-label="{{formatLocalizedDate $.Lang .Date "display"}}{{if .IsPeriodLogged}}, {{t $.Messages "calendar.legend.period_recorded"}}{{else if .IsPeriodPredicted}}, {{t $.Messages "calendar.legend.predicted_period"}}{{else if .IsStartWindow}}, {{t $.Messages "calendar.legend.start_window"}}{{end}}">
+        <span class="dashboard-week-weekday">{{t $.Messages .WeekdayKey}}</span>
+        <span class="dashboard-week-number">{{.DayNumber}}</span>
+      </a>
+      {{end}}
+    </div>
+
+    {{if .Overview.Ring.Visible}}
+    <div class="card dashboard-ring-card">
+      <div class="dashboard-ring">
+        <svg viewBox="0 0 100 100" class="dashboard-ring-svg" role="img" aria-label="{{t .Messages "dashboard.ring.title"}}: {{phaseLabel .Messages .Overview.Ring.Phase}}, {{.Overview.Ring.CurrentDay}} / {{.Overview.Ring.CycleLength}}">
+          <circle cx="50" cy="50" r="42" fill="none" class="dashboard-ring-track" stroke-width="9"></circle>
+          {{range .Overview.Ring.Arcs}}
+          <circle cx="50" cy="50" r="42" fill="none" pathLength="100" stroke-width="9" stroke-linecap="butt" transform="rotate(-90 50 50)" class="dashboard-ring-arc {{if eq .Phase "menstrual"}}dashboard-ring-arc-menstrual{{else if eq .Phase "ovulation"}}dashboard-ring-arc-ovulation{{else if eq .Phase "luteal"}}dashboard-ring-arc-luteal{{else}}dashboard-ring-arc-follicular{{end}}" stroke-dasharray="{{.Dash}} {{.Gap}}" stroke-dashoffset="{{.Offset}}"></circle>
+          {{end}}
+          {{if .Overview.Ring.HasMarker}}
+          <circle cx="{{.Overview.Ring.MarkerX}}" cy="{{.Overview.Ring.MarkerY}}" r="4.4" class="dashboard-ring-marker"></circle>
+          {{end}}
+        </svg>
+        <div class="dashboard-ring-center">
+          <p class="dashboard-ring-phase">{{phaseLabel .Messages .Overview.Ring.Phase}}</p>
+          <p class="dashboard-ring-day">{{.Overview.Ring.CurrentDay}}</p>
+          <p class="dashboard-ring-caption">{{t .Messages "dashboard.ring.day_of_cycle"}}</p>
+        </div>
+      </div>
+    </div>
+    {{end}}
+  </section>
+  {{end}}
+
   <section class="space-y-3" data-dashboard-shell data-phase="{{.Stats.CurrentPhase}}" data-usage-goal="{{.CurrentUser.UsageGoal}}">
     {{$phase := .Stats.CurrentPhase}}{{if .CycleDataStale}}{{$phase = "unknown"}}{{else if .CycleHero.Visible}}{{$phase = .CycleHero.CurrentPhase}}{{end}}
     {{/* The page's ONE fertility verdict, resolved once and read by every site
@@ -281,7 +341,12 @@
   </section>
 
   <div class="grid gap-6" data-dashboard-editor data-phase="{{.Stats.CurrentPhase}}" data-fertility="{{$fertilityStatus}}" data-usage-goal="{{.CurrentUser.UsageGoal}}">
-    <section class="card p-4 sm:p-5">
+    <section {{if .IsOwner}}id="dashboard-log" {{end}}class="card p-4 sm:p-5{{if .IsOwner}} dashboard-log-sheet{{end}}">
+      {{if .IsOwner}}
+      {{/* Phone only: the journal opens as a sheet from the + button (a :target, so no
+           script is needed) and this closes it. From sm up the journal is inline. */}}
+      <a href="#dashboard-top" class="dashboard-log-sheet-close" aria-label="{{t .Messages "dashboard.log_sheet.close"}}"><span aria-hidden="true">×</span></a>
+      {{end}}
       {{/* The title and the day it edits are one line: the date is what the
            title is about, not a second heading. */}}
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -547,5 +612,8 @@
       {{end}}
     </section>
   </div>
+  {{if .IsOwner}}
+  <a href="#dashboard-log" class="dashboard-fab" aria-label="{{t .Messages "dashboard.fab.label"}}"><span aria-hidden="true">+</span></a>
+  {{end}}
 </section>
 {{end}}
