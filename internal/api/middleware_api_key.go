@@ -34,7 +34,7 @@ const (
 	contextAPIKeyScopeKey = "current_api_key_scope"
 
 	apiKeyBearerScheme = "bearer"
-	apiKeyScopeErrKey  = "api key scope"
+	apiKeyScopeErrKey  = "api key scope" // #nosec G101 -- error spec key, not a credential.
 )
 
 type apiKeyRoute struct {

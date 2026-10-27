@@ -65,6 +65,11 @@ id = "generic-api-key"
   [rules.allowlist]
     regexes = [
       '''0123456789abcdef0123456789abcdef''', # testNotifySecretKey (internal/cli/notify_test.go)
+      # NOT a secret: the HKDF info label that domain-separates the API key
+      # authenticator's derived key (internal/security/api_key_mac.go). It is a
+      # public constant in the source, and generic-api-key flags it only because
+      # the identifier and value contain the word "key".
+      '''ovumcy\.api-key\.key\.v1''',
       '''53QMWFBK3KWC4KFNCMZSP37SHKGEJNEG''', # mut2totpserviceCollidingSecret (internal/services/totp_service_mutation_round2_test.go)
       '''v1\.AQIDBAUGBwgJCgsMgMCNVdfeoxzg5RdfW2gB0u8QSayB''', # legacyV1AuthCookieValueForTest (internal/api/secure_cookie_codec_rotation_test.go)
       '''NewStrongPass2''', # e2e fixture password (e2e/settings-password-export-danger.spec.ts)

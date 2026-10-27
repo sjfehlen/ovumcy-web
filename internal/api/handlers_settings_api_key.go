@@ -36,10 +36,10 @@ var (
 var apiKeyRevealEgress = healthEgressKind{action: "settings.api_key_reveal", target: "api_key"}
 
 // apiKeyRevealPath is the dedicated one-time reveal page.
-const apiKeyRevealPath = "/settings/api-key"
+const apiKeyRevealPath = "/settings/api-key" // #nosec G101 -- URL path of the reveal page, not a credential.
 
 const (
-	apiKeyRevealCookieName = "ovumcy_api_key"
+	apiKeyRevealCookieName = "ovumcy_api_key" // #nosec G101 -- cookie name contains "key" but is not a secret.
 	apiKeyRevealCookieTTL  = 20 * time.Minute
 )
 

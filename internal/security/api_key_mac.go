@@ -17,8 +17,8 @@ import (
 // the version suffix, like rotating SECRET_KEY, invalidates every stored
 // authenticator and so disarms every issued API key.
 const (
-	apiKeyMACSaltLabel = "ovumcy.api-key.salt.v1"
-	apiKeyMACInfoLabel = "ovumcy.api-key.key.v1"
+	apiKeyMACSaltLabel = "ovumcy.api-key.salt.v1" // #nosec G101 -- HKDF domain-separation label, not a credential.
+	apiKeyMACInfoLabel = "ovumcy.api-key.key.v1"  // #nosec G101 -- HKDF domain-separation label, not a credential.
 )
 
 // ErrAPIKeyMACKeyMissing is returned when no secret key is available to derive
