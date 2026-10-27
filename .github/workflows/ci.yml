@@ -1,7 +1,3 @@
-    # Upstream only. This publishes ghcr.io/<repo>:main with Docker Hub mirroring,
-    # signing and an alias-ordering check, which the sjfehlen fork does not use:
-    # its own fork-image.yml builds and pushes the same tag, and the two would
-    # fight over it (this job refuses an image that lacks the revision label).
 name: CI
 
 on:
@@ -2223,6 +2219,10 @@ jobs:
     # push run. Only `run_core` and `run_frontend` are cleared on push, and
     # together they clear the other three lanes (`test` included, through
     # both its Go dependencies and `test-frontend`).
+    # Upstream only. This publishes ghcr.io/<repo>:main with Docker Hub mirroring,
+    # signing and an alias-ordering check, which the sjfehlen fork does not use:
+    # its own fork-image.yml builds and pushes the same tag, and the two would
+    # fight over it (this job refuses an image that lacks the revision label).
     if: >-
       ${{ !cancelled()
       && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
