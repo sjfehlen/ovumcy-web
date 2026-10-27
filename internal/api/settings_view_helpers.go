@@ -83,6 +83,17 @@ func (handler *Handler) buildSettingsViewData(c fiber.Ctx, user *models.User, fl
 		data["Egress"] = buildSettingsEgressView(c, viewData.Egress, location)
 	}
 
+	// The API key card is projected past the same owner gate. Only its status is
+	// read — never the key, which is not stored — so the page can describe the
+	// key without any secret reaching it.
+	if services.IsOwnerUser(user) {
+		keyStatus, err := handler.apiKeyService.BuildKeyStatus(c.Context(), user.ID)
+		if err != nil {
+			return nil, err
+		}
+		data["APIKey"] = buildSettingsAPIKeyView(language, location, keyStatus)
+	}
+
 	if oidcEnabled, _ := data["OIDCEnabled"].(bool); oidcEnabled {
 		linked, err := handler.oidcService.ListLinkedIdentities(c.Context(), user.ID)
 		if err != nil {
@@ -152,4 +163,25 @@ func buildSettingsLinkedIdentityRows(language string, location *time.Location, l
 		})
 	}
 	return rows
+}
+
+// settingsAPIKeyView is what the API key card renders: whether a key exists, its
+// scope and when it was minted. The time lives in the datetime attribute and in
+// its own element, never inside the translated sentence, so no locale has to
+// interpolate a date.
+type settingsAPIKeyView struct {
+	Configured  bool
+	Scope       string
+	CreatedISO  string
+	CreatedText string
+}
+
+func buildSettingsAPIKeyView(language string, location *time.Location, status services.APIKeyStatus) settingsAPIKeyView {
+	view := settingsAPIKeyView{Configured: status.Configured, Scope: status.Scope}
+	if status.Configured && !status.CreatedAt.IsZero() {
+		created := status.CreatedAt.In(location)
+		view.CreatedISO = created.Format(time.RFC3339)
+		view.CreatedText = services.LocalizedDateDisplay(language, created)
+	}
+	return view
 }

@@ -91,6 +91,8 @@ func registerV1APIRoutes(app *fiber.App, handler *Handler) {
 	usersCurrent.Post("/calendar-feed", handler.OwnerOnly, handler.RefuseSettingsFormFromAnotherAccount(calendarFeedGenerateMutation), handler.GenerateCalendarFeed)
 	usersCurrent.Post("/calendar-feed/rotate", handler.OwnerOnly, handler.RefuseSettingsFormFromAnotherAccount(calendarFeedRotateMutation), handler.RotateCalendarFeed)
 	usersCurrent.Delete("/calendar-feed", handler.OwnerOnly, handler.RefuseSettingsFormFromAnotherAccount(calendarFeedRevokeMutation), handler.RevokeCalendarFeed)
+	usersCurrent.Post("/api-key", handler.OwnerOnly, handler.RefuseAccountSettingsFormFromAnotherAccount(apiKeyGenerateMutation), handler.GenerateAPIKey)
+	usersCurrent.Delete("/api-key", handler.OwnerOnly, handler.RefuseAccountSettingsFormFromAnotherAccount(apiKeyRevokeMutation), handler.RevokeAPIKey)
 	usersCurrent.Post("/timezone", handler.OwnerOnly, handler.RefuseSettingsFormFromAnotherAccount(timezoneSettingsMutation), handler.UpdateTimezone)
 	usersCurrent.Patch("/cycle", handler.OwnerOnly, handler.RefuseSettingsFormFromAnotherAccount(cycleSettingsMutation), handler.UpdateCycleSettings)
 	usersCurrent.Patch("/reminders", handler.OwnerOnly, handler.RefuseSettingsFormFromAnotherAccount(reminderSettingsMutation), handler.UpdateReminderSettings)
@@ -131,7 +133,7 @@ func registerV1APIRoutes(app *fiber.App, handler *Handler) {
 	days.Head("/:date", handler.OwnerOnly, handler.CheckDayExists)
 	days.Get("/:date", handler.OwnerOnly, handler.GetDay)
 	days.Put("/:date", handler.OwnerOnly, handler.RefuseDayFormFromAnotherAccount(dayUpsertMutation), handler.UpsertDay)
-	days.Patch("/:date", handler.OwnerOnly, handler.RefuseDayFormFromAnotherAccount(dayUpsertMutation), handler.PatchDay)
+	days.Patch("/:date", handler.OwnerOnly, handler.RestrictAPIKeyDayPatch, handler.RefuseDayFormFromAnotherAccount(dayUpsertMutation), handler.PatchDay)
 	days.Delete("/:date", handler.OwnerOnly, handler.RefuseDayFormFromAnotherAccount(dayDeleteMutation), handler.DeleteDay)
 	days.Post("/:date/cycle-start", handler.OwnerOnly, handler.RefuseDayFormFromAnotherAccount(cycleStartMarkMutation), handler.MarkCycleStart)
 
@@ -207,6 +209,8 @@ func registerPageRoutes(app *fiber.App, handler *Handler) {
 	// URL (a secret) is read from the sealed one-time cookie, shown once, then
 	// the cookie is cleared; a refresh redirects back to /settings.
 	app.Get(calendarFeedRevealPath, handler.refuseHEADOnShownOnceSurface, handler.AuthRequired, requireFirstPartyRequest(handler.refuseCalendarFeedRevealRequest), handler.ShowCalendarFeedRevealPage)
+	// One-time reveal of a freshly generated API key, shaped like the feed reveal above.
+	app.Get(apiKeyRevealPath, handler.refuseHEADOnShownOnceSurface, handler.AuthRequired, requireFirstPartyRequest(handler.refuseAPIKeyRevealRequest), handler.ShowAPIKeyRevealPage)
 }
 
 // shownOnceGETRoutes names every GET route whose chain starts with
@@ -258,6 +262,7 @@ var shownOnceGETRoutes = []string{
 	fiber.MethodGet + " " + registerPickupNextPath,
 	fiber.MethodGet + " /recovery-code",
 	fiber.MethodGet + " " + calendarFeedRevealPath,
+	fiber.MethodGet + " " + apiKeyRevealPath,
 	fiber.MethodGet + " /settings/2fa",
 }
 
@@ -271,6 +276,7 @@ var shownOnceGETRoutes = []string{
 var firstPartyGuardedRoutes = []string{
 	fiber.MethodGet + " " + registerPickupNextPath,
 	fiber.MethodGet + " " + calendarFeedRevealPath,
+	fiber.MethodGet + " " + apiKeyRevealPath,
 	fiber.MethodGet + " " + oidcCallbackContinuePath,
 }
 

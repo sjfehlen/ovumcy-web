@@ -1,0 +1,53 @@
+{{define "settings_api_key_section_content"}}
+  {{/* The API key card is its own section, deliberately outside the egress
+       ledger: it holds a credential the owner hands to another program, not an
+       outbound delivery the app makes. It answers with plain form posts and a
+       redirect, so it works without script, and it never renders the key: the
+       key is shown once on /settings/api-key, right after it is generated. */}}
+  <details class="card settings-section p-4 sm:p-5 space-y-4" id="settings-api-key" data-settings-section open>
+    <summary class="settings-section-summary">
+      <h2 class="journal-subtitle"><span aria-hidden="true">{{template "icon" "broadcast"}}</span> {{t .Messages "settings.api_key.title"}}</h2>
+    </summary>
+
+    <div>
+      <p class="journal-muted mt-1 text-sm">{{t .Messages "settings.api_key.subtitle"}}</p>
+      <p class="field-label mt-2">
+        {{if not .APIKey.Configured}}{{t .Messages "settings.api_key.state_off"}}{{else if eq .APIKey.Scope "period"}}{{t .Messages "settings.api_key.state_period"}}{{else}}{{t .Messages "settings.api_key.state_read"}}{{end}}
+      </p>
+      {{if and .APIKey.Configured .APIKey.CreatedISO}}
+      <p class="journal-muted text-sm">{{t .Messages "settings.api_key.created_label"}} <time datetime="{{.APIKey.CreatedISO}}">{{.APIKey.CreatedText}}</time></p>
+      {{end}}
+      <p class="journal-muted mt-1 text-sm">{{t .Messages "settings.api_key.url_hint"}}</p>
+    </div>
+
+    <form action="/api/v1/users/current/api-key" method="post" class="space-y-3">
+      <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+      <input type="hidden" name="day_form_account" value="{{.DayFormAccount}}">
+      <fieldset class="space-y-2">
+        <legend class="field-label">{{t .Messages "settings.api_key.scope_label"}}</legend>
+        <label class="flex items-start gap-2 text-sm">
+          <input type="radio" name="scope" value="read" {{if ne .APIKey.Scope "period"}}checked{{end}}>
+          <span><span class="field-label">{{t .Messages "settings.api_key.scope_read"}}</span><br><span class="journal-muted">{{t .Messages "settings.api_key.scope_read_hint"}}</span></span>
+        </label>
+        <label class="flex items-start gap-2 text-sm">
+          <input type="radio" name="scope" value="period" {{if eq .APIKey.Scope "period"}}checked{{end}}>
+          <span><span class="field-label">{{t .Messages "settings.api_key.scope_period"}}</span><br><span class="journal-muted">{{t .Messages "settings.api_key.scope_period_hint"}}</span></span>
+        </label>
+      </fieldset>
+      <div class="settings-form-actions">
+        <button type="submit" class="btn-secondary">{{if .APIKey.Configured}}{{t .Messages "settings.api_key.rotate"}}{{else}}{{t .Messages "settings.api_key.generate"}}{{end}}</button>
+      </div>
+    </form>
+
+    {{if .APIKey.Configured}}
+    <form action="/api/v1/users/current/api-key" method="post">
+      <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+      <input type="hidden" name="day_form_account" value="{{.DayFormAccount}}">
+      <input type="hidden" name="_method" value="DELETE">
+      <div class="settings-form-actions">
+        <button type="submit" class="btn-secondary">{{t .Messages "settings.api_key.revoke"}}</button>
+      </div>
+    </form>
+    {{end}}
+  </details>
+{{end}}

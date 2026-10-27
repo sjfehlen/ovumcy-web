@@ -1,0 +1,36 @@
+{{define "content"}}
+<section class="mx-auto flex min-h-[72vh] max-w-3xl items-center justify-center px-4 py-8">
+  <div
+    class="card card-hero w-full p-7 sm:p-10"
+    data-recovery-code-tools
+    data-copy-success-message="{{t .Messages "settings.api_key.reveal.copied"}}"
+    data-copy-failed-message="{{t .Messages "settings.api_key.reveal.copy_failed"}}">
+    <p class="journal-kicker"><span aria-hidden="true">{{template "icon" "broadcast"}}</span> {{t .Messages "settings.api_key.reveal.kicker"}}</p>
+
+    <div>
+      <h1 class="journal-title">
+        {{if .APIKeyRotated}}{{t .Messages "settings.api_key.reveal.title_rotated"}}{{else}}{{t .Messages "settings.api_key.reveal.title"}}{{end}}
+      </h1>
+      <p class="journal-muted mt-2">{{t .Messages "settings.api_key.reveal.subtitle"}}</p>
+      <p class="field-label mt-2">{{if eq .APIKeyScope "period"}}{{t .Messages "settings.api_key.scope_period"}}{{else}}{{t .Messages "settings.api_key.scope_read"}}{{end}}</p>
+    </div>
+
+    <p class="status-error mt-4">{{t .Messages "settings.api_key.reveal.shown_once_warning"}}</p>
+
+    <div class="recovery-code-box mt-5 break-all" id="api-key-value" data-recovery-code-value>{{.APIKey}}</div>
+
+    <div class="mt-4 flex flex-wrap gap-2">
+      <button type="button" class="btn-secondary" data-recovery-action="copy">{{t .Messages "settings.api_key.reveal.copy"}}</button>
+    </div>
+
+    <p class="status-ok mt-4" data-recovery-status="copied" hidden>{{t .Messages "settings.api_key.reveal.copied"}}</p>
+    <p class="status-error mt-4" data-recovery-status="copy-failed" hidden>{{t .Messages "settings.api_key.reveal.copy_failed"}}</p>
+
+    <p class="journal-muted mt-5 text-sm">{{t .Messages "medical.disclaimer"}}</p>
+
+    <div class="mt-6">
+      <a href="/settings" class="btn-primary w-full inline-flex justify-center">{{t .Messages "settings.api_key.reveal.done"}}</a>
+    </div>
+  </div>
+</section>
+{{end}}

@@ -310,6 +310,17 @@ type User struct {
 	// past the token it was about. Rendered on the settings card and cited by
 	// SECURITY.md's Calendar Feed Subscription rows.
 	CalendarFeedLastPolledOn *time.Time `gorm:"column:calendar_feed_last_polled_on;type:date"`
+
+	// APIKeyHash is the hex HMAC of the owner's API key (migration 042). The key
+	// plaintext is never stored. Empty means no key is issued. APIKeyScope is
+	// the scope fixed when the key was minted (services.APIKeyScope*), and
+	// APIKeyCreatedAt / APIKeyRevealedAt are the mint time and the shown-once
+	// consumption mark. All four are written only by the API key repository
+	// methods and cleared with every other bearer credential on a compromise.
+	APIKeyHash       string     `gorm:"column:api_key_hash"`
+	APIKeyScope      string     `gorm:"column:api_key_scope"`
+	APIKeyCreatedAt  *time.Time `gorm:"column:api_key_created_at"`
+	APIKeyRevealedAt *time.Time `gorm:"column:api_key_revealed_at"`
 }
 
 // CalendarFeedTokenColumns is the transport-free narrow view of the three stored

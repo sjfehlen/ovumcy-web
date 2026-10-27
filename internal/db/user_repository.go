@@ -1232,6 +1232,9 @@ func (repo *UserRepository) UpdateRecoveryCodeHashAndRevokeSessions(ctx context.
 			"calendar_feed_verifier_hash":  nil,
 			"calendar_feed_verifier_mac":   nil,
 			"calendar_feed_last_polled_on": nil,
+			"api_key_hash":                 nil,
+			"api_key_scope":                nil,
+			"api_key_created_at":           nil,
 		}); err != nil {
 			return err
 		}
@@ -1316,6 +1319,9 @@ func (repo *UserRepository) ForceResetPasswordAndRevokeSessions(ctx context.Cont
 		"calendar_feed_verifier_hash":  nil,
 		"calendar_feed_verifier_mac":   nil,
 		"calendar_feed_last_polled_on": nil,
+		"api_key_hash":                 nil,
+		"api_key_scope":                nil,
+		"api_key_created_at":           nil,
 		"auth_session_version":         gorm.Expr("auth_session_version + 1"),
 	}).Error; err != nil {
 		return err
@@ -1440,6 +1446,9 @@ func (repo *UserRepository) UpdatePasswordRecoveryCodeAndRevokeSessionsCAS(ctx c
 				"calendar_feed_verifier_hash":  nil,
 				"calendar_feed_verifier_mac":   nil,
 				"calendar_feed_last_polled_on": nil,
+				"api_key_hash":                 nil,
+				"api_key_scope":                nil,
+				"api_key_created_at":           nil,
 				"auth_session_version":         gorm.Expr("auth_session_version + 1"),
 			})
 		if result.Error != nil {
@@ -1821,6 +1830,12 @@ func (repo *UserRepository) ClearAllDataAndResetSettings(ctx context.Context, us
 			"calendar_feed_verifier_hash":  nil,
 			"calendar_feed_verifier_mac":   nil,
 			"calendar_feed_last_polled_on": nil,
+			// The API key (migration 042) is revoked by the same wipe, and for the
+			// same reason: it is a standing capability over the data just erased.
+			// Its shown-once mark is left alone like the two below.
+			"api_key_hash":       nil,
+			"api_key_scope":      nil,
+			"api_key_created_at": nil,
 			// The two shown-once reveal marks (migration 036) are deliberately
 			// ABSENT from this map. They are not preferences and hold no health
 			// data — each records that a secret was already displayed — and NULL
@@ -1956,4 +1971,78 @@ func (repo *UserRepository) CompleteOnboarding(ctx context.Context, userID uint,
 			"onboarding_completed": true,
 		}).Error
 	})
+}
+
+// SaveAPIKey stores the keyed authenticator of a freshly minted API key with its
+// scope and mint time, scoped strictly to userID. It replaces any previous key,
+// which stops authenticating the moment this commits, and re-arms the
+// shown-once reveal mark in the same statement. It does not bump
+// auth_session_version: a key is a per-surface capability, not a login session.
+func (repo *UserRepository) SaveAPIKey(ctx context.Context, userID uint, mac string, scope string, createdAt time.Time) error {
+	query, err := repo.scopedUserUpdate(ctx, userID)
+	if err != nil {
+		return err
+	}
+	return query.Updates(map[string]any{
+		"api_key_hash":        mac,
+		"api_key_scope":       scope,
+		"api_key_created_at":  createdAt.UTC(),
+		"api_key_revealed_at": nil,
+	}).Error
+}
+
+// ClearAPIKey revokes the owner's API key. Idempotent.
+func (repo *UserRepository) ClearAPIKey(ctx context.Context, userID uint) error {
+	query, err := repo.scopedUserUpdate(ctx, userID)
+	if err != nil {
+		return err
+	}
+	return query.Updates(map[string]any{
+		"api_key_hash":       nil,
+		"api_key_scope":      nil,
+		"api_key_created_at": nil,
+	}).Error
+}
+
+// FindByAPIKeyMAC returns the owner whose stored authenticator equals mac. An
+// empty mac matches nothing: key-off rows carry the empty value and must never
+// be reachable by it.
+func (repo *UserRepository) FindByAPIKeyMAC(ctx context.Context, mac string) (models.User, bool, error) {
+	if mac == "" {
+		return models.User{}, false, nil
+	}
+	var user models.User
+	if err := repo.database.WithContext(ctx).Where("api_key_hash = ?", mac).First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return models.User{}, false, nil
+		}
+		return models.User{}, false, err
+	}
+	return user, true, nil
+}
+
+// ClaimAPIKeyReveal atomically claims the one-time reveal of the owner's API
+// key, scoped strictly to userID, and returns true iff this call consumed it.
+// It is ClaimCalendarFeedReveal's twin and carries the same reasoning.
+func (repo *UserRepository) ClaimAPIKeyReveal(ctx context.Context, userID uint, revealedAt time.Time) (bool, error) {
+	result := repo.database.WithContext(ctx).Model(&models.User{}).
+		Where("id = ? AND api_key_revealed_at IS NULL", userID).
+		Update("api_key_revealed_at", revealedAt.UTC())
+	if result.Error != nil {
+		return false, result.Error
+	}
+	return result.RowsAffected == 1, nil
+}
+
+// LoadAPIKeyStatus reads only the columns the settings card renders. The
+// authenticator is selected so the caller can tell a key is set, and is not
+// renderable.
+func (repo *UserRepository) LoadAPIKeyStatus(ctx context.Context, userID uint) (models.User, error) {
+	var user models.User
+	if err := repo.database.WithContext(ctx).
+		Select("id", "api_key_hash", "api_key_scope", "api_key_created_at").
+		First(&user, userID).Error; err != nil {
+		return models.User{}, err
+	}
+	return user, nil
 }

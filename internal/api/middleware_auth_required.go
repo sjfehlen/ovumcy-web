@@ -16,6 +16,12 @@ import (
 // below 400, which the per-IP logout row, skipping only failed requests, would
 // count.
 func (handler *Handler) AuthRequired(c fiber.Ctx) error {
+	// A bearer credential is a different kind of request, not a fallback: it is
+	// authenticated by the key alone and never consults the cookie. See
+	// middleware_api_key.go.
+	if presented, byKey := bearerAPIKey(c); byKey {
+		return handler.authRequiredByAPIKey(c, presented)
+	}
 	user, err := handler.authenticateRequest(c)
 	if err != nil {
 		// A fault is not a refusal: the session may be live, so neither the

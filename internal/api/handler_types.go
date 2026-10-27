@@ -45,6 +45,7 @@ type Handler struct {
 	calendarViewService  *services.CalendarViewService
 	calendarFeedService  *services.CalendarFeedService
 	calendarFeedSettings *services.CalendarFeedSettingsService
+	apiKeyService        *services.APIKeyService
 	dashboardViewService *services.DashboardViewService
 	exportService        *services.ExportService
 	importService        *services.ImportService

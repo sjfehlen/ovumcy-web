@@ -450,6 +450,11 @@ func csrfMiddlewareConfig(cookieSecure bool, handler *api.Handler) csrf.Config {
 			if c.Method() == fiber.MethodPost && c.Path() == security.OIDCCallbackPath {
 				return true
 			}
+			// A bearer-key request for a key-reachable route holds no ambient
+			// credential for a forged request to ride. See api.IsAPIKeyRequest.
+			if api.IsAPIKeyRequest(c) {
+				return true
+			}
 			return api.IsCalendarFeedRequest(c.Method(), c.Path())
 		},
 		// Fiber v3 removed KeyLookup and ContextKey: the token source is now a
