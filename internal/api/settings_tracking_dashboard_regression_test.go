@@ -121,7 +121,7 @@ func TestTrackingSettingsJSONBodyKeepsThePublishedInvertedKeys(t *testing.T) {
 
 // recoveryRotationWritableColumns are the users columns a recovery-code
 // regeneration is allowed to move: the fresh code and its one-time reveal
-// mark, the feed capability it disarms, the session version it bumps, and the
+// mark, the feed capability and API key it disarms, the session version it bumps, and the
 // row's own timestamp. Every other column is settings state the rotation has
 // no business touching, and the sweep below holds all of them at once instead
 // of naming two sentinels.
@@ -131,6 +131,9 @@ var recoveryRotationWritableColumns = map[string]bool{
 	"calendar_feed_selector":      true,
 	"calendar_feed_verifier_hash": true,
 	"calendar_feed_verifier_mac":  true,
+	"api_key_hash":                true,
+	"api_key_scope":               true,
+	"api_key_created_at":          true,
 	"auth_session_version":        true,
 	"updated_at":                  true,
 }
