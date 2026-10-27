@@ -520,7 +520,6 @@
   "dashboard.log_sheet.close": "Schließen",
   "dashboard.first_dashboard_tip": "Hier können Sie Periodentage, Symptome, Stimmung, Temperatur und Notizen festhalten. Die Schnellaktionen oben helfen Ihnen, häufige Aktualisierungen schneller zu erfassen.",
   "dashboard.period_tip_once": "Tag 1 ist der erste Tag mit voller Blutung, nicht Schmierblutung.",
-  "dashboard.quick_action_period": "Periodentag schnell umschalten",
   "dashboard.quick_action_mood": "Stimmung schnell erfassen",
   "dashboard.quick_action_symptom": "Symptom schnell erfassen",
   "dashboard.spotting_cycle_warning": "Schmierblutung ist möglicherweise nicht Tag 1. Prüfen Sie morgen noch einmal.",

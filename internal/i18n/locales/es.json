@@ -520,7 +520,6 @@
   "dashboard.log_sheet.close": "Cerrar",
   "dashboard.first_dashboard_tip": "Aquí puedes registrar periodo, síntomas, ánimo, temperatura y notas. Las acciones rápidas de arriba sirven para guardar lo más frecuente con menos pasos.",
   "dashboard.period_tip_once": "El día 1 es el primer día de flujo real, no de manchado.",
-  "dashboard.quick_action_period": "Marcar rápido un día de periodo",
   "dashboard.quick_action_mood": "Registrar rápido el ánimo",
   "dashboard.quick_action_symptom": "Registrar rápido un síntoma",
   "dashboard.spotting_cycle_warning": "El manchado puede no ser el día 1. Revísalo mañana.",

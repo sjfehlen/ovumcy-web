@@ -764,31 +764,6 @@ test.describe('Dashboard: today editor', () => {
     await expect(periodToggle).toBeChecked();
   });
 
-  test('quick period action toggles and persists via autosave', async ({ page }) => {
-    await registerOwnerOnDashboard(page, 'dashboard-quick-period');
-
-    const savePath = await todaySavePath(page);
-    const periodToggle = page.locator('input[name="is_period"]');
-    const autosaveResponse = waitForDashboardAutosave(page, savePath);
-    const initiallyChecked = await periodToggle.isChecked();
-
-    await page.locator('[data-quick-action="period"]').click();
-    if (initiallyChecked) {
-      await expect(periodToggle).not.toBeChecked();
-    } else {
-      await expect(periodToggle).toBeChecked();
-    }
-
-    await autosaveResponse;
-
-    await page.reload();
-    if (initiallyChecked) {
-      await expect(periodToggle).not.toBeChecked();
-    } else {
-      await expect(periodToggle).toBeChecked();
-    }
-  });
-
   test('notes autosave after idle without pressing update', async ({ page }) => {
     await registerOwnerOnDashboard(page, 'dashboard-autosave-idle');
 

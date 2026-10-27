@@ -962,21 +962,10 @@
   }
 
   function handleDashboardQuickAction(root, action) {
-    var periodToggle = root.querySelector("[data-period-toggle]");
     var moodSection = root.querySelector("[data-dashboard-section='mood']");
     var symptomSection = root.querySelector("[data-dashboard-section='symptoms']");
 
     switch (action) {
-      case "period":
-        if (!periodToggle) {
-          return;
-        }
-        periodToggle.checked = !periodToggle.checked;
-        periodToggle.dispatchEvent(new Event("change", { bubbles: true }));
-        if (periodToggle.checked) {
-          maybeAcknowledgePeriodTip(root);
-        }
-        break;
       case "mood":
         focusSectionControl(moodSection, "input[name='mood']:checked, input[name='mood']");
         break;

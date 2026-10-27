@@ -520,7 +520,6 @@
   "dashboard.log_sheet.close": "Close",
   "dashboard.first_dashboard_tip": "You can log period days, symptoms, mood, temperature, and notes here. Quick actions at the top help you capture the most common updates faster.",
   "dashboard.period_tip_once": "Day 1 is the first day of full flow, not spotting.",
-  "dashboard.quick_action_period": "Quick toggle period day",
   "dashboard.quick_action_mood": "Quick log mood",
   "dashboard.quick_action_symptom": "Quick log a symptom",
   "dashboard.spotting_cycle_warning": "Spotting may not be day 1. Check again tomorrow.",

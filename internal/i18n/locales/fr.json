@@ -686,7 +686,6 @@
   "dashboard.log_sheet.close": "Fermer",
   "dashboard.first_dashboard_tip": "Vous pouvez enregistrer ici les jours de règles, les symptômes, l'humeur, la température et les notes. Les actions rapides en haut vous aident à saisir les mises à jour les plus courantes plus rapidement.",
   "dashboard.period_tip_once": "Le jour 1 est le premier jour de véritable flux, pas de simples légères pertes.",
-  "dashboard.quick_action_period": "Activer/désactiver le jour de règles",
   "dashboard.quick_action_mood": "Enregistrer rapidement l'humeur",
   "dashboard.quick_action_symptom": "Enregistrer rapidement un symptôme",
   "dashboard.spotting_cycle_warning": "Les légères pertes ne correspondent peut-être pas au jour 1. Vérifiez à nouveau demain.",
