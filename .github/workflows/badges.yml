@@ -24,6 +24,9 @@ concurrency:
 
 jobs:
   ghcr-pulls:
+    # Upstream only: it publishes the pull-count badge for upstream's own package and
+    # would fail (and email) every day on a fork.
+    if: github.repository == 'ovumcy/ovumcy-web'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
