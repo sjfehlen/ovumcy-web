@@ -1,8 +1,8 @@
 // A reader who asked the system for reduced motion must not be animated
 // across the page. The hash-target scroll already honoured the preference;
-// the dashboard's quick "jump to mood / symptoms" actions scrolled smoothly
-// whatever the reader had asked for (WEB-262). Both paths are pinned here,
-// against the shipped bundle, for both settings of the preference.
+// the dashboard's jump actions once scrolled smoothly whatever the reader had
+// asked for (WEB-262). The hash path is pinned here, against the shipped
+// bundle, for both settings of the preference.
 
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -12,13 +12,8 @@ const APP_BUNDLE = readAppBundle();
 
 const PAGE = `<!doctype html><html><head></head><body>
   <div data-dashboard-editor>
-    <button type="button" data-quick-action="mood">Mood</button>
-    <button type="button" data-quick-action="symptom">Symptom</button>
-    <fieldset id="mood-section" data-dashboard-section="mood">
+    <fieldset id="mood-section">
       <input type="radio" name="mood" value="1">
-    </fieldset>
-    <fieldset data-dashboard-section="symptoms">
-      <input type="checkbox" name="symptom_ids" value="7">
     </fieldset>
   </div>
 </body></html>`;
@@ -45,40 +40,6 @@ async function loadWithMotionPreference(reduce, url) {
     },
   });
   return { dom, scrolls };
-}
-
-for (const [action, sectionKey] of [
-  ["mood", "mood"],
-  ["symptom", "symptoms"],
-]) {
-  test(`the ${action} quick action jumps without animation when reduced motion is requested`, async () => {
-    const { dom, scrolls } = await loadWithMotionPreference(true);
-    try {
-      const document = dom.window.document;
-      document.querySelector(`[data-quick-action='${action}']`).click();
-      const section = document.querySelector(`[data-dashboard-section='${sectionKey}']`);
-      const toSection = scrolls.filter((entry) => entry.element === section);
-      assert.equal(toSection.length, 1, "the quick action scrolls its section into view once");
-      assert.equal(toSection[0].arg.behavior, undefined, "no smooth behaviour under reduced motion");
-      assert.equal(toSection[0].arg.block, "center", "the section is still centred");
-    } finally {
-      dom.window.close();
-    }
-  });
-
-  test(`the ${action} quick action still scrolls smoothly when motion is allowed`, async () => {
-    const { dom, scrolls } = await loadWithMotionPreference(false);
-    try {
-      const document = dom.window.document;
-      document.querySelector(`[data-quick-action='${action}']`).click();
-      const section = document.querySelector(`[data-dashboard-section='${sectionKey}']`);
-      const toSection = scrolls.filter((entry) => entry.element === section);
-      assert.equal(toSection.length, 1, "the quick action scrolls its section into view once");
-      assert.equal(toSection[0].arg.behavior, "smooth");
-    } finally {
-      dom.window.close();
-    }
-  });
 }
 
 for (const reduce of [true, false]) {

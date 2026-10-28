@@ -520,8 +520,6 @@
   "dashboard.log_sheet.close": "Schließen",
   "dashboard.first_dashboard_tip": "Hier können Sie Periodentage, Symptome, Stimmung, Temperatur und Notizen festhalten. Die Schnellaktionen oben helfen Ihnen, häufige Aktualisierungen schneller zu erfassen.",
   "dashboard.period_tip_once": "Tag 1 ist der erste Tag mit voller Blutung, nicht Schmierblutung.",
-  "dashboard.quick_action_mood": "Stimmung schnell erfassen",
-  "dashboard.quick_action_symptom": "Symptom schnell erfassen",
   "dashboard.spotting_cycle_warning": "Schmierblutung ist möglicherweise nicht Tag 1. Prüfen Sie morgen noch einmal.",
   "dashboard.long_period_warning": "Eine Periode von mehr als 8 Tagen sollten Sie mit einer Ärztin oder einem Arzt besprechen.",
   "dashboard.implantation_warning": "Diese frühe Blutung ist möglicherweise nicht der Beginn eines neuen Zyklus — allein am Zeitpunkt lässt sich das nicht erkennen. Wenn Sie schwanger werden möchten, ziehen Sie einen Test in Betracht. Bei Schmerzen, Schwindel oder starker Blutung suchen Sie umgehend ärztlichen Rat.",

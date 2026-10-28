@@ -3978,21 +3978,6 @@
 
   window.__ovumcyMaybeAcknowledgePeriodTip = maybeAcknowledgePeriodTip;
 
-  function showQuickFocus(section) {
-    if (!section || !section.classList) {
-      return;
-    }
-
-    section.classList.add("dashboard-section-quick-focus");
-    if (section.__ovumcyQuickFocusTimer) {
-      window.clearTimeout(section.__ovumcyQuickFocusTimer);
-    }
-    section.__ovumcyQuickFocusTimer = window.setTimeout(function () {
-      section.classList.remove("dashboard-section-quick-focus");
-      section.__ovumcyQuickFocusTimer = 0;
-    }, 1800);
-  }
-
   // A link into a collapsed disclosure lands on nothing: a target inside a
   // closed <details> is not rendered, so the browser has nothing to scroll to
   // and the jump silently does nothing. The journal's late-cycle actions point
@@ -4059,28 +4044,6 @@
       scrollToHashTarget();
     });
     scrollToHashTarget();
-  }
-
-  function focusSectionControl(section, selector) {
-    if (!section || !section.querySelector) {
-      return;
-    }
-
-    var target = section.querySelector(selector);
-    if (!target) {
-      return;
-    }
-
-    if (target.closest && target.closest("details")) {
-      target.closest("details").open = true;
-    }
-    if (typeof target.focus === "function") {
-      target.focus();
-    }
-    if (typeof section.scrollIntoView === "function") {
-      section.scrollIntoView(scrollIntoViewOptions("center"));
-    }
-    showQuickFocus(section);
   }
 
   function dashboardAutosaveIndicator(form) {
@@ -5046,20 +5009,6 @@
     }, 2000);
   }
 
-  function handleDashboardQuickAction(root, action) {
-    var moodSection = root.querySelector("[data-dashboard-section='mood']");
-    var symptomSection = root.querySelector("[data-dashboard-section='symptoms']");
-
-    switch (action) {
-      case "mood":
-        focusSectionControl(moodSection, "input[name='mood']:checked, input[name='mood']");
-        break;
-      case "symptom":
-        focusSectionControl(symptomSection, "input[name='symptom_ids']:checked, input[name='symptom_ids']");
-        break;
-    }
-  }
-
   // Outcome-independent by design: the indicator row reports save state, and a
   // failure is reported by the save-status swap instead. The finalizer only
   // stands the row down.
@@ -5855,17 +5804,11 @@
         });
 
         root.addEventListener("click", function (event) {
-          var actionButton = closestFromEvent(event, "[data-quick-action]");
           var cycleStartButton = closestFromEvent(event, "[data-dashboard-cycle-start-button]");
           var undoButton = closestFromEvent(event, "[data-dashboard-autosave-undo]");
           if (undoButton && this.contains(undoButton)) {
             event.preventDefault();
             runDashboardUndo(this.querySelector("[data-dashboard-save-form]"));
-            return;
-          }
-          if (actionButton && this.contains(actionButton)) {
-            event.preventDefault();
-            handleDashboardQuickAction(this, actionButton.getAttribute("data-quick-action"));
             return;
           }
           if (cycleStartButton && this.contains(cycleStartButton)) {

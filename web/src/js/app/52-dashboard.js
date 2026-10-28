@@ -242,21 +242,6 @@
 
   window.__ovumcyMaybeAcknowledgePeriodTip = maybeAcknowledgePeriodTip;
 
-  function showQuickFocus(section) {
-    if (!section || !section.classList) {
-      return;
-    }
-
-    section.classList.add("dashboard-section-quick-focus");
-    if (section.__ovumcyQuickFocusTimer) {
-      window.clearTimeout(section.__ovumcyQuickFocusTimer);
-    }
-    section.__ovumcyQuickFocusTimer = window.setTimeout(function () {
-      section.classList.remove("dashboard-section-quick-focus");
-      section.__ovumcyQuickFocusTimer = 0;
-    }, 1800);
-  }
-
   // A link into a collapsed disclosure lands on nothing: a target inside a
   // closed <details> is not rendered, so the browser has nothing to scroll to
   // and the jump silently does nothing. The journal's late-cycle actions point
@@ -323,27 +308,5 @@
       scrollToHashTarget();
     });
     scrollToHashTarget();
-  }
-
-  function focusSectionControl(section, selector) {
-    if (!section || !section.querySelector) {
-      return;
-    }
-
-    var target = section.querySelector(selector);
-    if (!target) {
-      return;
-    }
-
-    if (target.closest && target.closest("details")) {
-      target.closest("details").open = true;
-    }
-    if (typeof target.focus === "function") {
-      target.focus();
-    }
-    if (typeof section.scrollIntoView === "function") {
-      section.scrollIntoView(scrollIntoViewOptions("center"));
-    }
-    showQuickFocus(section);
   }
 

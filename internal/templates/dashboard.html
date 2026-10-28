@@ -268,6 +268,18 @@
             {{if .IsLogged}}data-logged="true"{{end}}></span>
           {{end}}
         </div>
+        {{/* The ribbon cells carry accessible names but no visible text, so
+             sighted readers get a key: the four phase fills, then the overlays
+             drawn on top of them. */}}
+        <ul class="dashboard-cycle-legend journal-muted text-xs">
+          <li class="dashboard-cycle-legend-item"><span class="dashboard-cycle-legend-swatch" data-phase="menstrual" aria-hidden="true"></span>{{phaseLabel $.Messages "menstrual"}}</li>
+          <li class="dashboard-cycle-legend-item"><span class="dashboard-cycle-legend-swatch" data-phase="follicular" aria-hidden="true"></span>{{phaseLabel $.Messages "follicular"}}</li>
+          <li class="dashboard-cycle-legend-item"><span class="dashboard-cycle-legend-swatch" data-phase="ovulation" aria-hidden="true"></span>{{phaseLabel $.Messages "ovulation"}}</li>
+          <li class="dashboard-cycle-legend-item"><span class="dashboard-cycle-legend-swatch" data-phase="luteal" aria-hidden="true"></span>{{phaseLabel $.Messages "luteal"}}</li>
+          <li class="dashboard-cycle-legend-item"><span class="dashboard-cycle-legend-swatch" data-legend-mark="fertile" aria-hidden="true"></span>{{t $.Messages "calendar.legend.fertility"}}</li>
+          <li class="dashboard-cycle-legend-item"><span class="dashboard-cycle-legend-swatch" data-legend-mark="start-window" aria-hidden="true"></span>{{t $.Messages "calendar.legend.start_window"}}</li>
+          <li class="dashboard-cycle-legend-item"><span class="dashboard-cycle-legend-swatch" data-legend-mark="today" aria-hidden="true"></span>{{t $.Messages "nav.today"}}</li>
+        </ul>
         {{end}}
       </div>
 
@@ -412,26 +424,16 @@
         <input type="hidden" name="day_form_account" value="{{.DayFormAccount}}">
         <input type="hidden" name="ack_period_tip" value="false" data-period-tip-ack>
 
-        {{/* Two one-line rows became one: the jump shortcuts and the period
-             toggle are both single controls, and stacking them cost a row of
-             the journal's height for nothing. */}}
-        <div class="flex flex-wrap items-center gap-3">
-          <div class="dashboard-quick-actions" data-dashboard-quick-actions>
-            <button type="button" class="btn-secondary dashboard-quick-action" data-quick-action="mood" aria-label="{{t .Messages "dashboard.quick_action_mood"}}" title="{{t .Messages "dashboard.quick_action_mood"}}"><span aria-hidden="true">{{template "icon" "mood"}}</span></button>
-            <button type="button" class="btn-secondary dashboard-quick-action" data-quick-action="symptom" aria-label="{{t .Messages "dashboard.quick_action_symptom"}}" title="{{t .Messages "dashboard.quick_action_symptom"}}"><span aria-hidden="true">{{template "icon" "capsule"}}</span></button>
-          </div>
-
-          <label class="period-toggle" data-binary-toggle data-active="{{if .TodayEntry.IsPeriod}}true{{else}}false{{end}}">
-            <input type="checkbox" name="is_period" value="true" data-period-toggle data-binary-toggle-input {{if .TodayEntry.IsPeriod}}checked{{end}}>
-            <span class="period-toggle-copy">
-              <span
-                class="period-toggle-main"
-                data-period-toggle-label
-                data-period-label-on="{{t .Messages "dashboard.period_day"}}"
-                data-period-label-off="{{t .Messages "dashboard.period_day"}}"><span data-period-toggle-glyph aria-hidden="true">{{template "icon" "drop"}}</span> {{t .Messages "dashboard.period_day"}}</span>
-            </span>
-          </label>
-        </div>
+        <label class="period-toggle w-fit" data-binary-toggle data-active="{{if .TodayEntry.IsPeriod}}true{{else}}false{{end}}">
+          <input type="checkbox" name="is_period" value="true" data-period-toggle data-binary-toggle-input {{if .TodayEntry.IsPeriod}}checked{{end}}>
+          <span class="period-toggle-copy">
+            <span
+              class="period-toggle-main"
+              data-period-toggle-label
+              data-period-label-on="{{t .Messages "dashboard.period_day"}}"
+              data-period-label-off="{{t .Messages "dashboard.period_day"}}"><span data-period-toggle-glyph aria-hidden="true">{{template "icon" "drop"}}</span> {{t .Messages "dashboard.period_day"}}</span>
+          </span>
+        </label>
 
         <div class="dashboard-once-tip journal-muted text-sm" data-once-tip="dashboard-first-tour" hidden>{{t .Messages "dashboard.first_dashboard_tip"}}</div>
         {{if not .CurrentUser.ShownPeriodTip}}

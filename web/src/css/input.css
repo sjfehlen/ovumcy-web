@@ -856,19 +856,6 @@
   color: #48794b;
 }
 
-@utility dashboard-quick-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.55rem;
-}
-
-@utility dashboard-quick-action {
-  width: 2.9rem;
-  min-width: 2.9rem;
-  padding-inline: 0;
-  font-size: var(--text-base);
-}
-
 @utility dashboard-once-tip {
   border-left: 3px solid rgba(212, 165, 116, 0.55);
   padding-left: 0.7rem;
@@ -914,13 +901,6 @@
     outline: 2px solid rgba(169, 137, 231, 0.58);
     outline-offset: 2px;
   }
-}
-
-@utility dashboard-section-quick-focus {
-  border-radius: var(--radius-card);
-  box-shadow: 0 0 0 3px rgba(212, 165, 116, 0.18);
-  padding: 0.4rem 0.55rem;
-  margin-inline: -0.55rem;
 }
 
 @utility dashboard-status-separator {
@@ -1123,6 +1103,59 @@
   &[data-today='true'] {
     box-shadow: inset 0 0 0 2px rgb(var(--cal-today));
     z-index: 1;
+  }
+}
+
+/* The key under the ribbon. Swatches reuse the ribbon's own fills so the key
+   cannot drift from what it explains. */
+@utility dashboard-cycle-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.9rem;
+  margin: 0.55rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+@utility dashboard-cycle-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+@utility dashboard-cycle-legend-swatch {
+  position: relative;
+  flex: none;
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 0.2rem;
+  overflow: hidden;
+  background: rgb(var(--phase-follicular));
+
+  &[data-phase='menstrual'] {
+    background: rgb(var(--phase-menstrual));
+  }
+
+  &[data-phase='ovulation'] {
+    background: rgb(var(--phase-ovulation));
+  }
+
+  &[data-phase='luteal'] {
+    background: rgb(var(--phase-luteal));
+  }
+
+  &[data-legend-mark='fertile'] {
+    background: var(--surface-quiet);
+    box-shadow: inset 0 -0.25rem 0 rgb(var(--cal-fertile-ink) / 0.9);
+  }
+
+  &[data-legend-mark='start-window'] {
+    background: var(--ribbon-fill-start-window, linear-gradient(180deg, rgb(0 0 0 / 0.65), rgb(0 0 0 / 0.55)));
+  }
+
+  &[data-legend-mark='today'] {
+    background: transparent;
+    box-shadow: inset 0 0 0 2px rgb(var(--cal-today));
   }
 }
 
@@ -1722,6 +1755,14 @@
   border: 1px solid var(--btn-surface-border);
   background: var(--btn-surface);
   color: var(--btn-quiet-ink);
+
+  /* The date switch marks the day being edited: the chip for it is filled, the
+     others stay quiet. */
+  &[data-entry-date-choice][aria-current='page'] {
+    border-color: transparent;
+    background: var(--btn-primary-bg);
+    color: var(--btn-primary-ink);
+  }
 }
 
 @utility btn-danger {
