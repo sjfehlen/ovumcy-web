@@ -368,7 +368,7 @@
         </div>
         {{if .IsOwner}}
         <div
-          class="flex flex-wrap items-center gap-2"
+          class="journal-date-switch w-full"
           role="group"
           aria-label="{{t .Messages "dashboard.entry_date_switch"}}"
           data-dashboard-entry-date-switch>
@@ -396,7 +396,7 @@
         hx-put="/api/v1/days/{{.Today}}"
         hx-target="#save-status"
         hx-swap="innerHTML"
-        class="space-y-4"
+        class="dashboard-journal flex flex-col gap-5"
         data-save-feedback
         data-dashboard-save-form
         data-dashboard-date="{{.Today}}"
