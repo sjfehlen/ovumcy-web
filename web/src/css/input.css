@@ -5563,6 +5563,39 @@
   color: var(--text-muted);
 }
 
+/* Pregnancy card: stands in the hero slot while a pregnancy is declared. The
+   bar is a native <progress>, so it needs no inline style under the strict CSP. */
+@utility dashboard-pregnancy-weeks-unit {
+  margin-inline-start: 0.1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+@utility dashboard-pregnancy-progress {
+  width: 7.5rem;
+  height: 0.4rem;
+  margin-block: 0.3rem;
+  border: 0;
+  border-radius: 9999px;
+  overflow: hidden;
+  appearance: none;
+  background: var(--border-hairline);
+  accent-color: var(--accent-strong);
+
+  &::-webkit-progress-bar {
+    background: var(--border-hairline);
+  }
+
+  &::-webkit-progress-value {
+    background: var(--accent-strong);
+  }
+
+  &::-moz-progress-bar {
+    background: var(--accent-strong);
+  }
+}
+
 @utility dashboard-hero-sentence {
   max-width: 9.5rem;
   font-size: 1.3rem;

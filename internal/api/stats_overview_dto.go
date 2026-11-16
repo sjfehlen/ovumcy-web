@@ -124,6 +124,12 @@ type StatsOverviewResponse struct {
 	DisclaimerKey        string                   `json:"disclaimer_key"`
 
 	LutealPhasePersonalised bool `json:"luteal_phase_personalised"`
+
+	// Pregnancy is the owner's declared pregnancy, derived from the stored due
+	// date and today. Active is false (and every other field absent) when none is
+	// declared. It is read-only here: the owner declares and ends a pregnancy
+	// through PUT and DELETE /api/v1/users/current/pregnancy.
+	Pregnancy pregnancyDTO `json:"pregnancy"`
 }
 
 // newStatsOverviewResponse maps the PUBLISHED stats — the copy

@@ -28,5 +28,7 @@ func (handler *Handler) GetStatsOverview(c fiber.Ctx) error {
 	today := services.DateAtLocation(now, location)
 	published, suppression, confirmed := services.PublishedOverviewStats(user, logs, stats, today, location)
 
-	return c.JSON(newStatsOverviewResponse(published, suppression, confirmed, handler.medicalDisclaimer(c)))
+	response := newStatsOverviewResponse(published, suppression, confirmed, handler.medicalDisclaimer(c))
+	response.Pregnancy = newPregnancyDTO(services.ResolvePregnancyStatus(user, today))
+	return c.JSON(response)
 }

@@ -211,6 +211,7 @@ func BuildDependencies(repositories *db.Repositories, secretKey []byte, i18nMana
 		ExportService:          exportService,
 		ImportService:          importService,
 		SettingsService:        settingsService,
+		PregnancyService:       services.NewPregnancyService(repositories.Users),
 		SettingsViewService:    services.NewSettingsViewService(settingsService, exportService, symptomService, egressLedgerService),
 		WebhookSettingsService: webhookSettingsService,
 		OnboardingService:      services.NewOnboardingService(repositories.Users),

@@ -660,6 +660,16 @@ func TestSettingsMutationsWithPersistenceAreAudited(t *testing.T) {
 			target: "reminder_settings",
 		},
 		{
+			name:   "pregnancy",
+			method: http.MethodPut,
+			path:   "/api/v1/users/current/pregnancy",
+			accept: url.Values{"due_date": {pregnancyTestDay(120)}},
+			refuse: url.Values{"due_date": {"soon"}},
+			action: "settings.pregnancy_start",
+			target: "pregnancy",
+			leak:   pregnancyTestDay(120),
+		},
+		{
 			name:    "profile",
 			method:  http.MethodPatch,
 			path:    "/api/v1/users/current/profile",

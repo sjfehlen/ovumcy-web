@@ -154,7 +154,7 @@ func potentialImplantationGapDays(user *models.User, logs []models.DailyLog, tar
 	// length is always the account's own median.
 	gateStats := stats
 	gateStats.CurrentCycleDay = CalendarDaysBetween(previousStart, targetDay) + 1
-	if _, paused := ResolvePregnancyPause(filtered, boundaryCtx); paused {
+	if _, paused := ResolvePregnancyPauseForUser(user, filtered, boundaryCtx); paused {
 		gateStats.PregnancyPaused = true
 	}
 	if FertilityProjectionSuppressed(user, gateStats) {

@@ -86,15 +86,21 @@ type SettingsPageViewData struct {
 	TrackCervicalMucus     bool
 	// The three section toggles are rendered positively; the stored columns are
 	// inverted and are converted exactly once, in tracking_visibility.go.
-	ShowSexChip             bool
-	ShowCycleFactors        bool
-	ShowNotesField          bool
-	ShowHistoricalPhases    bool
-	WeekStartsOn            string
-	ReminderLeadDays        int
-	LastPeriodStart         string
-	TodayISO                string
-	CycleStartMinISO        string
+	ShowSexChip          bool
+	ShowCycleFactors     bool
+	ShowNotesField       bool
+	ShowHistoricalPhases bool
+	WeekStartsOn         string
+	ReminderLeadDays     int
+	LastPeriodStart      string
+	TodayISO             string
+	CycleStartMinISO     string
+	// Pregnancy is the owner's derived pregnancy status (inactive when none is
+	// declared). PregnancyMinDueISO and PregnancyMaxDueISO bound the due-date field
+	// to the window services.PregnancyDueDateFromInput accepts.
+	Pregnancy               PregnancyStatus
+	PregnancyMinDueISO      string
+	PregnancyMaxDueISO      string
 	Export                  SettingsExportViewData
 	Symptoms                SettingsSymptomsViewData
 	HasOwnerExportViewState bool
@@ -201,6 +207,10 @@ func buildResolvedSettingsUser(user *models.User, persisted models.User, today t
 	// been recorded" for every owner whose delivery happened afterwards.
 	resolvedUser.WebhookLastDeliveredAt = persisted.WebhookLastDeliveredAt
 	resolvedUser.LastPeriodStart = persisted.LastPeriodStart
+	// The session user is a copy taken at sign-in, so a pregnancy declared or ended
+	// afterwards is read from the persisted row, like the columns above.
+	resolvedUser.PregnancyDueDate = persisted.PregnancyDueDate
+	resolvedUser.PregnancyEndedOn = persisted.PregnancyEndedOn
 
 	lastPeriodStart := ""
 	if persisted.LastPeriodStart != nil {
@@ -242,6 +252,9 @@ func buildSettingsPageBaseViewData(user models.User, lastPeriodStart string, tod
 		LastPeriodStart:        lastPeriodStart,
 		TodayISO:               today.Format("2006-01-02"),
 		CycleStartMinISO:       minCycleStart.Format("2006-01-02"),
+		Pregnancy:              ResolvePregnancyStatus(&user, today),
+		PregnancyMinDueISO:     AddCalendarDays(today, -pregnancyMaxOverdueDays, today.Location()).Format("2006-01-02"),
+		PregnancyMaxDueISO:     AddCalendarDays(today, PregnancyTermDays, today.Location()).Format("2006-01-02"),
 	}
 }
 

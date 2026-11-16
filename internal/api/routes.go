@@ -96,6 +96,8 @@ func registerV1APIRoutes(app *fiber.App, handler *Handler) {
 	usersCurrent.Post("/timezone", handler.OwnerOnly, handler.RefuseSettingsFormFromAnotherAccount(timezoneSettingsMutation), handler.UpdateTimezone)
 	usersCurrent.Patch("/cycle", handler.OwnerOnly, handler.RefuseSettingsFormFromAnotherAccount(cycleSettingsMutation), handler.UpdateCycleSettings)
 	usersCurrent.Patch("/reminders", handler.OwnerOnly, handler.RefuseSettingsFormFromAnotherAccount(reminderSettingsMutation), handler.UpdateReminderSettings)
+	usersCurrent.Put("/pregnancy", handler.OwnerOnly, handler.RefuseSettingsFormFromAnotherAccount(pregnancyStartMutation), handler.StartPregnancy)
+	usersCurrent.Delete("/pregnancy", handler.OwnerOnly, handler.RefuseSettingsFormFromAnotherAccount(pregnancyEndMutation), handler.EndPregnancy)
 	usersCurrent.Put("/password", handler.OwnerOnly, handler.ChangePassword)
 	usersCurrent.Post("/password/step-up", handler.OwnerOnly, handler.StartLocalPasswordSetupReauth)
 	usersCurrent.Post("/recovery-code", handler.OwnerOnly, handler.RegenerateRecoveryCode)

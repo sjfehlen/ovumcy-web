@@ -656,6 +656,8 @@ func (repo *UserRepository) ListAllForNotify(ctx context.Context) ([]models.Webh
 			"irregular_cycle",
 			"unpredictable_cycle",
 			"last_period_start",
+			"pregnancy_due_date",
+			"pregnancy_ended_on",
 			"timezone",
 			"interface_language",
 			"webhook_enabled",
@@ -1655,6 +1657,8 @@ func (repo *UserRepository) LoadSettingsByID(ctx context.Context, userID uint) (
 			"unpredictable_cycle",
 			"long_period_warning_cycle_start",
 			"last_period_start",
+			"pregnancy_due_date",
+			"pregnancy_ended_on",
 			"reminder_lead_days",
 			// The owner's persisted IANA zone (models.User.Timezone doc comment):
 			// not sensitive, not a secret, and needed here so
@@ -1766,6 +1770,9 @@ func (repo *UserRepository) ClearAllDataAndResetSettings(ctx context.Context, us
 			"unpredictable_cycle":             false,
 			"long_period_warning_cycle_start": nil,
 			"last_period_start":               nil,
+			// An explicit pregnancy record is health data and goes with the logs.
+			"pregnancy_due_date": nil,
+			"pregnancy_ended_on": nil,
 			// users.timezone is the owner's last observed IANA zone, written from
 			// the request (api.UpdateTimezone) and read by the request-free
 			// reminder pass. It is a coarse location signal inferred from the
@@ -2045,4 +2052,48 @@ func (repo *UserRepository) LoadAPIKeyStatus(ctx context.Context, userID uint) (
 		return models.User{}, err
 	}
 	return user, nil
+}
+
+// StartPregnancy declares (or re-dates) the owner's pregnancy by its estimated
+// due date, scoped strictly to userID. It clears pregnancy_ended_on, because a
+// new declaration supersedes the previous ending.
+//
+// It advances webhook_config_version, for the reason UpdateReminderLeadDays does:
+// a declared pregnancy pauses the period and ovulation reminders, so a notify
+// pass holding a snapshot taken BEFORE this write must not still deliver a
+// reminder the owner has just paused. It deliberately does not bump
+// auth_session_version — a pregnancy record is health data, not a change to the
+// account's security posture.
+func (repo *UserRepository) StartPregnancy(ctx context.Context, userID uint, dueDate time.Time) error {
+	query, err := repo.scopedUserUpdate(ctx, userID)
+	if err != nil {
+		return err
+	}
+	return query.Updates(map[string]any{
+		"pregnancy_due_date":     dueDate,
+		"pregnancy_ended_on":     nil,
+		"webhook_config_version": gorm.Expr("webhook_config_version + 1"),
+	}).Error
+}
+
+// EndPregnancy closes the owner's active pregnancy as of endedOn and reports
+// whether one was active. The compare-and-set on pregnancy_due_date IS NOT NULL
+// makes a double submit a visible no-op instead of a rewrite of the ending day.
+// It advances webhook_config_version for the same reason StartPregnancy does:
+// ending a pregnancy resumes reminders.
+func (repo *UserRepository) EndPregnancy(ctx context.Context, userID uint, endedOn time.Time) (bool, error) {
+	if err := requireUserOwnerID(userID); err != nil {
+		return false, err
+	}
+	result := repo.database.WithContext(ctx).Model(&models.User{}).
+		Where("id = ? AND pregnancy_due_date IS NOT NULL", userID).
+		Updates(map[string]any{
+			"pregnancy_due_date":     nil,
+			"pregnancy_ended_on":     endedOn,
+			"webhook_config_version": gorm.Expr("webhook_config_version + 1"),
+		})
+	if result.Error != nil {
+		return false, result.Error
+	}
+	return result.RowsAffected > 0, nil
 }

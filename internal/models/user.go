@@ -169,7 +169,18 @@ type User struct {
 	// dashboard banner (issue #123) and webhook reminders: a reminder surfaces
 	// once the predicted event is within this many days of "today". Default 3
 	// matches services.DashboardReminderBannerWindowDays; bounded 0–14 at save.
-	ReminderLeadDays int `gorm:"column:reminder_lead_days;not null;default:3"`
+	// PregnancyDueDate is the estimated due date of the owner's ACTIVE pregnancy
+	// (migration 043); nil means no pregnancy is declared. A date-only value
+	// (UTC-midnight), like LastPeriodStart. Gestational age is derived from it,
+	// never stored, so there is a single anchor. A declared pregnancy pauses
+	// cycle predictions everywhere the positive-test pause does (see
+	// services.ResolvePregnancyPauseForUser). Health data: cleared by clear-data.
+	PregnancyDueDate *time.Time `gorm:"column:pregnancy_due_date;type:date"`
+	// PregnancyEndedOn is the day the owner ended their most recent pregnancy
+	// (migration 043). Positive tests dated on or before it stop pausing
+	// predictions. No outcome is recorded. Cleared by clear-data.
+	PregnancyEndedOn *time.Time `gorm:"column:pregnancy_ended_on;type:date"`
+	ReminderLeadDays int        `gorm:"column:reminder_lead_days;not null;default:3"`
 	// WebhookConfigVersion is the monotonic REVOCATION EPOCH of the block above
 	// (migration 038). Every write to the owner's DELIVERY CONFIGURATION — the
 	// block above plus the shared reminder lead window: a settings save, a

@@ -71,6 +71,9 @@ func (handler *Handler) buildSettingsViewData(c fiber.Ctx, user *models.User, fl
 		"LastPeriodStart":        viewData.LastPeriodStart,
 		"TodayISO":               viewData.TodayISO,
 		"CycleStartMinISO":       viewData.CycleStartMinISO,
+		"Pregnancy":              viewData.Pregnancy,
+		"PregnancyMinDueISO":     viewData.PregnancyMinDueISO,
+		"PregnancyMaxDueISO":     viewData.PregnancyMaxDueISO,
 	}
 
 	// The egress account is projected only past the owner gate, and as ONE key.

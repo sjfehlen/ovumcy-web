@@ -77,6 +77,12 @@ type WebhookNotifyRecord struct {
 	LastPeriodStart    *time.Time `gorm:"column:last_period_start;type:date"`
 	Timezone           string     `gorm:"column:timezone"`
 
+	// Pregnancy record. The pass derives its pause from these exactly as every
+	// other surface does, so a reminder never leaves the instance for an owner who
+	// declared a pregnancy. Dates only — no outcome is stored.
+	PregnancyDueDate *time.Time `gorm:"column:pregnancy_due_date;type:date"`
+	PregnancyEndedOn *time.Time `gorm:"column:pregnancy_ended_on;type:date"`
+
 	// InterfaceLanguage is the UI language the owner chose (users.interface_language,
 	// empty when they never chose one). It is the durable carrier of that choice,
 	// so the notify pass resolves every localized payload field at it instead of

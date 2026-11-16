@@ -50,6 +50,7 @@ type Handler struct {
 	exportService        *services.ExportService
 	importService        *services.ImportService
 	settingsService      *services.SettingsService
+	pregnancyService     *services.PregnancyService
 	settingsViewService  *services.SettingsViewService
 	webhookSettingsSvc   *services.WebhookSettingsService
 	onboardingSvc        *services.OnboardingService

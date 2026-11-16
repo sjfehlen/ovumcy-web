@@ -1,0 +1,73 @@
+{{define "settings_pregnancy_section_content"}}
+  {{/* Declaring a pregnancy pauses cycle predictions (the same pause a positive
+       test applies) until it is ended. The gestational figures are derived from
+       the one stored due date, so there is nothing to keep in step. Both actions
+       are plain form posts and work without script. */}}
+  <details id="settings-pregnancy" class="card settings-section p-4 sm:p-5 space-y-4" data-settings-section{{if .Pregnancy.Active}} open{{end}}>
+    <summary class="settings-section-summary">
+      <h2 class="journal-subtitle"><span aria-hidden="true">{{template "icon" "sprout"}}</span> {{t .Messages "settings.pregnancy.title"}}</h2>
+    </summary>
+
+    {{if .Pregnancy.Active}}
+    <div class="space-y-1" data-settings-pregnancy-active>
+      <p class="field-label">{{printf (t .Messages "pregnancy.gestational_age") .Pregnancy.Weeks .Pregnancy.DaysIntoWeek}} · {{printf (t .Messages "pregnancy.trimester") .Pregnancy.Trimester}}</p>
+      <p class="journal-muted text-sm">{{t .Messages "pregnancy.due_date"}}: {{formatLocalizedDate .Lang .Pregnancy.DueDate "display"}}</p>
+      <p class="journal-muted text-sm">{{t .Messages "settings.pregnancy.paused_note"}}</p>
+    </div>
+    {{else}}
+    <p class="journal-muted text-sm">{{t .Messages "settings.pregnancy.subtitle"}}</p>
+    {{end}}
+
+    <form
+      action="/api/v1/users/current/pregnancy"
+      method="post"
+      class="card-quiet space-y-3">
+      <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+      <input type="hidden" name="_method" value="PUT">
+      <input type="hidden" name="day_form_account" value="{{.DayFormAccount}}">
+
+      <div class="space-y-1">
+        <label class="field-label" for="settings-pregnancy-due-date">{{t .Messages "settings.pregnancy.due_date"}}</label>
+        <input
+          id="settings-pregnancy-due-date"
+          type="date"
+          name="due_date"
+          min="{{.PregnancyMinDueISO}}"
+          max="{{.PregnancyMaxDueISO}}"
+          {{if .Pregnancy.Active}}value="{{.Pregnancy.DueDate.Format "2006-01-02"}}"{{end}}
+          aria-describedby="settings-pregnancy-due-date-hint"
+          class="input-field">
+        <p id="settings-pregnancy-due-date-hint" class="journal-muted text-xs">{{t .Messages "settings.pregnancy.due_date_hint"}}</p>
+      </div>
+
+      <div class="space-y-1">
+        <label class="field-label" for="settings-pregnancy-last-period">{{t .Messages "settings.pregnancy.last_period"}}</label>
+        <input
+          id="settings-pregnancy-last-period"
+          type="date"
+          name="last_period_start"
+          min="{{.CycleStartMinISO}}"
+          max="{{.TodayISO}}"
+          aria-describedby="settings-pregnancy-last-period-hint"
+          class="input-field">
+        <p id="settings-pregnancy-last-period-hint" class="journal-muted text-xs">{{t .Messages "settings.pregnancy.last_period_hint"}}</p>
+      </div>
+
+      <div class="settings-form-actions">
+        <button type="submit" class="btn-secondary">{{if .Pregnancy.Active}}{{t .Messages "settings.pregnancy.update"}}{{else}}{{t .Messages "settings.pregnancy.start"}}{{end}}</button>
+      </div>
+    </form>
+
+    {{if .Pregnancy.Active}}
+    <form action="/api/v1/users/current/pregnancy" method="post">
+      <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+      <input type="hidden" name="_method" value="DELETE">
+      <input type="hidden" name="day_form_account" value="{{.DayFormAccount}}">
+      <p class="journal-muted mb-2 text-xs">{{t .Messages "settings.pregnancy.end_hint"}}</p>
+      <div class="settings-form-actions">
+        <button type="submit" class="btn-secondary">{{t .Messages "settings.pregnancy.end"}}</button>
+      </div>
+    </form>
+    {{end}}
+  </details>
+{{end}}

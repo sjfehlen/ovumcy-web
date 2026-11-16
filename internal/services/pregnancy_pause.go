@@ -48,3 +48,38 @@ func ResolvePregnancyPause(logs []models.DailyLog, ctx BoundaryContext) (time.Ti
 	}
 	return latestPositive, true
 }
+
+// ResolvePregnancyPauseForUser is ResolvePregnancyPause with the owner's explicit
+// pregnancy record layered on top, and is what every surface that derives cycle
+// stats consults.
+//
+//   - A declared pregnancy (users.pregnancy_due_date) pauses predictions outright,
+//     returning the implied last-period day as the pause's date.
+//   - An ended pregnancy (users.pregnancy_ended_on) retires every positive test
+//     dated on or before the ending day, so ending a pregnancy lifts a pause that
+//     a test from that pregnancy would otherwise keep in force until the next
+//     period. A positive test AFTER the ending day pauses again as usual.
+//   - Otherwise the result is ResolvePregnancyPause unchanged.
+func ResolvePregnancyPauseForUser(user *models.User, logs []models.DailyLog, ctx BoundaryContext) (time.Time, bool) {
+	if user != nil && user.PregnancyDueDate != nil && !user.PregnancyDueDate.IsZero() {
+		return AddCalendarDays(dateOnly(*user.PregnancyDueDate), -PregnancyTermDays, time.UTC), true
+	}
+	if user != nil && user.PregnancyEndedOn != nil && !user.PregnancyEndedOn.IsZero() {
+		logs = withoutPositiveTestsThrough(logs, dateOnly(*user.PregnancyEndedOn))
+	}
+	return ResolvePregnancyPause(logs, ctx)
+}
+
+// withoutPositiveTestsThrough returns logs with the pregnancy-test result reset
+// on every day up to and including cutoff. It copies; the caller's slice is not
+// modified.
+func withoutPositiveTestsThrough(logs []models.DailyLog, cutoff time.Time) []models.DailyLog {
+	out := make([]models.DailyLog, len(logs))
+	copy(out, logs)
+	for index := range out {
+		if out[index].PregnancyTest == models.PregnancyTestPositive && CalendarDaysBetween(dateOnly(out[index].Date), cutoff) >= 0 {
+			out[index].PregnancyTest = models.PregnancyTestNone
+		}
+	}
+	return out
+}

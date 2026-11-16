@@ -6,6 +6,20 @@
        its own: every value is read off the same published context the status card
        below uses, so a prediction that card withholds is withheld here too. */}}
   <section id="dashboard-top" class="dashboard-overview" aria-label="{{t .Messages "dashboard.overview"}}">
+    {{if .Pregnancy.Active}}
+    {{/* A declared pregnancy stands in the hero slot: the countdown and cycle day
+         above are paused for it, so the card says where the pregnancy is instead.
+         Every figure is derived from the stored due date and today. */}}
+    <div class="card dashboard-hero dashboard-pregnancy" data-dashboard-pregnancy>
+      <div class="dashboard-hero-ring">
+        <p class="dashboard-hero-number">{{.Pregnancy.Weeks}}<span class="dashboard-pregnancy-weeks-unit">{{t .Messages "pregnancy.weeks_short"}}</span>{{if gt .Pregnancy.DaysIntoWeek 0}} {{.Pregnancy.DaysIntoWeek}}<span class="dashboard-pregnancy-weeks-unit">{{t .Messages "pregnancy.days_short"}}</span>{{end}}</p>
+        <p class="dashboard-hero-unit">{{printf (t .Messages "pregnancy.trimester") .Pregnancy.Trimester}}</p>
+        <progress class="dashboard-pregnancy-progress" max="100" value="{{.Pregnancy.ProgressPercent}}" aria-label="{{printf (t .Messages "pregnancy.progress") .Pregnancy.ProgressPercent}}">{{.Pregnancy.ProgressPercent}}%</progress>
+        <p class="dashboard-hero-sentence">{{if .Pregnancy.Overdue}}{{printf (t .Messages "pregnancy.overdue") (formatLocalizedDate .Lang .Pregnancy.DueDate "display")}}{{else if eq .Pregnancy.DaysUntilDue 0}}{{t .Messages "pregnancy.due_today"}}{{else}}{{tn .Messages .Lang "pregnancy.days_until_due" .Pregnancy.DaysUntilDue}} · {{formatLocalizedDate .Lang .Pregnancy.DueDate "display"}}{{end}}</p>
+        <a href="/settings#settings-pregnancy" class="dashboard-hero-action">{{t .Messages "pregnancy.manage"}}</a>
+      </div>
+    </div>
+    {{else}}
     <div class="card dashboard-hero">
       <div class="dashboard-hero-ring">
         {{if .Overview.Countdown.Visible}}
@@ -24,6 +38,7 @@
         <a href="#dashboard-log" class="dashboard-hero-action">{{t .Messages "dashboard.hero.log_period"}}</a>
       </div>
     </div>
+    {{end}}
 
     <div class="card dashboard-week" role="group" aria-label="{{t .Messages "dashboard.week.title"}}">
       {{range .Overview.Week}}

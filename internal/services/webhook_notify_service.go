@@ -573,6 +573,8 @@ func userFromNotifyRecord(record models.WebhookNotifyRecord) models.User {
 		IrregularCycle:     record.IrregularCycle,
 		UnpredictableCycle: record.UnpredictableCycle,
 		LastPeriodStart:    record.LastPeriodStart,
+		PregnancyDueDate:   record.PregnancyDueDate,
+		PregnancyEndedOn:   record.PregnancyEndedOn,
 	}
 }
 

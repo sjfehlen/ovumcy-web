@@ -513,6 +513,77 @@ components:
           enum: [light, dark, system]
       additionalProperties: false
 
+    Pregnancy:
+      type: object
+      description: >-
+        The owner's declared pregnancy, derived from the stored due date and the
+        owner's today. An inactive pregnancy is `{"active": false}` and nothing
+        else; an active one always carries every other field, zero included.
+        Gestational age counts from the implied first day of the last period
+        (the due date minus 280 days).
+      required: [active]
+      properties:
+        active:
+          type: boolean
+        due_date:
+          type: string
+          format: date
+        gestational_days:
+          type: integer
+          minimum: 0
+          description: Days since the implied last period, floored at 0.
+        weeks:
+          type: integer
+          minimum: 0
+        days_into_week:
+          type: integer
+          minimum: 0
+          maximum: 6
+        trimester:
+          type: integer
+          enum: [1, 2, 3]
+          description: First closes at 13w6d and second at 27w6d.
+        days_until_due:
+          type: integer
+          description: Negative once the due date has passed.
+        overdue:
+          type: boolean
+        progress_percent:
+          type: integer
+          minimum: 0
+          maximum: 100
+      additionalProperties: false
+
+    PregnancyStart:
+      type: object
+      description: >-
+        Send `due_date`, or `last_period_start` to have the due date derived as
+        280 days after it. When both are sent, `due_date` wins. The resulting due
+        date must put today inside the pregnancy: no more than 280 days ahead and
+        no more than 14 days past.
+      properties:
+        due_date:
+          type: string
+          format: date
+        last_period_start:
+          type: string
+          format: date
+
+    PregnancyUpdated:
+      type: object
+      description: JSON answer of a pregnancy start or end.
+      required: [ok, status, pregnancy]
+      properties:
+        ok:
+          type: boolean
+          enum: [true]
+        status:
+          type: string
+          enum: [pregnancy_started, pregnancy_ended]
+        pregnancy:
+          $ref: '#/components/schemas/Pregnancy'
+      additionalProperties: false
+
     RemindersUpdated:
       type: object
       description: JSON answer of the reminder save. `reminder_lead_days` is the stored value; every save clamps it to 0–14.
@@ -1100,6 +1171,7 @@ components:
         - fertility_window_start
         - fertility_window_end
         - pregnancy_paused
+        - pregnancy
         - suppression
         - disclaimer
         - disclaimer_key
@@ -1337,8 +1409,10 @@ components:
         pregnancy_paused:
           type: boolean
           description: >-
-            A positive pregnancy test with no later cycle start. One of the
-            signals behind `suppression`.
+            A declared pregnancy (see `pregnancy`), or a positive pregnancy test
+            with no later cycle start. One of the signals behind `suppression`.
+        pregnancy:
+          $ref: '#/components/schemas/Pregnancy'
         suppression:
           $ref: '#/components/schemas/StatsOverviewSuppression'
         disclaimer:
@@ -3829,6 +3903,53 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '400': { $ref: '#/components/responses/ValidationError' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /api/v1/users/current/pregnancy:
+    put:
+      tags: [settings]
+      summary: Declare or re-date a pregnancy (owner only).
+      description: >-
+        Declares the owner's pregnancy from an estimated due date, or from the
+        first day of the last period (due date = that day + 280). Calling it again
+        re-dates the active pregnancy and clears any earlier ending. While a
+        pregnancy is declared, cycle predictions are paused on every surface —
+        the dashboard, the calendar, the stats page, the JSON API, the `.ics` feed
+        and webhook reminders — until it is ended. Advances the webhook revocation
+        epoch so an in-flight reminder pass cannot still deliver; does not bump
+        auth_session_version. Not accepted with an API key.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PregnancyStart' }
+      responses:
+        '200':
+          description: Saved.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PregnancyUpdated' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+    delete:
+      tags: [settings]
+      summary: End the pregnancy (owner only).
+      description: >-
+        Ends the active pregnancy as of the owner's today and resumes cycle
+        predictions. Positive pregnancy tests dated on or before today stop
+        pausing predictions. No outcome is recorded. Answers `409` when no
+        pregnancy is active.
+      responses:
+        '200':
+          description: Ended.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PregnancyUpdated' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
         '429': { $ref: '#/components/responses/RateLimited' }
 
   /api/v1/users/current/password:
