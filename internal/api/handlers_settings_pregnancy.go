@@ -141,6 +141,12 @@ type pregnancyDTO struct {
 	DaysUntilDue    *int    `json:"days_until_due,omitempty"`
 	Overdue         *bool   `json:"overdue,omitempty"`
 	ProgressPercent *int    `json:"progress_percent,omitempty"`
+	// SizeComparison is a stable English identifier of the everyday object the
+	// baby is about the size of this week (for example "lime"), and LengthCM the
+	// matching approximate length. Both are absent before week 4. They are rough
+	// averages from a fixed table, not a measurement.
+	SizeComparison *string  `json:"size_comparison,omitempty"`
+	LengthCM       *float64 `json:"length_cm,omitempty"`
 }
 
 func newPregnancyDTO(status services.PregnancyStatus) pregnancyDTO {
@@ -148,7 +154,7 @@ func newPregnancyDTO(status services.PregnancyStatus) pregnancyDTO {
 		return pregnancyDTO{}
 	}
 	dueDate := status.DueDate.Format("2006-01-02")
-	return pregnancyDTO{
+	dto := pregnancyDTO{
 		Active:          true,
 		DueDate:         &dueDate,
 		GestationalDays: &status.GestationalDays,
@@ -159,4 +165,9 @@ func newPregnancyDTO(status services.PregnancyStatus) pregnancyDTO {
 		Overdue:         &status.Overdue,
 		ProgressPercent: &status.ProgressPercent,
 	}
+	if info, ok := services.PregnancyWeekInfoFor(status.Weeks); ok {
+		dto.SizeComparison = &info.FruitID
+		dto.LengthCM = &info.LengthCM
+	}
+	return dto
 }

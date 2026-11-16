@@ -19,6 +19,26 @@
         <a href="/settings#settings-pregnancy" class="dashboard-hero-action">{{t .Messages "pregnancy.manage"}}</a>
       </div>
     </div>
+    {{if .PregnancyWeek.Visible}}
+    {{/* The week's reference card: a size comparison, one development line and the
+         checks usually done around now. All of it is a fixed table keyed by the
+         completed week, so nothing about the pregnancy beyond its due date is
+         stored for it. */}}
+    <div class="card dashboard-pregnancy-week space-y-2" data-dashboard-pregnancy-week>
+      <h2 class="journal-subtitle">{{t .Messages "pregnancy.week_title"}} · {{printf (t .Messages "pregnancy.gestational_age") .Pregnancy.Weeks .Pregnancy.DaysIntoWeek}}</h2>
+      <p class="field-label">{{printf (t .Messages "pregnancy.size_label") (t .Messages .PregnancyWeek.FruitKey)}} · {{printf (t .Messages .PregnancyWeek.Length.UnitKey) .PregnancyWeek.Length.Value}}</p>
+      <p class="text-sm">{{t .Messages .PregnancyWeek.DevKey}}</p>
+      {{if .PregnancyWeek.MilestoneKeys}}
+      <div class="space-y-1">
+        <p class="field-label">{{t .Messages "pregnancy.milestone_title"}}</p>
+        <ul class="journal-muted list-disc ps-5 text-sm">
+          {{range .PregnancyWeek.MilestoneKeys}}<li>{{t $.Messages .}}</li>{{end}}
+        </ul>
+      </div>
+      {{end}}
+      <p class="journal-muted text-xs">{{t .Messages "pregnancy.week_disclaimer"}}</p>
+    </div>
+    {{end}}
     {{else}}
     <div class="card dashboard-hero">
       <div class="dashboard-hero-ring">

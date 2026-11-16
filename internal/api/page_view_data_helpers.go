@@ -29,6 +29,7 @@ func (handler *Handler) buildDashboardViewData(ctx context.Context, user *models
 		"CycleHero":                             viewData.CycleHero,
 		"Overview":                              viewData.Overview,
 		"Pregnancy":                             services.ResolvePregnancyStatus(user, viewData.Today),
+		"PregnancyWeek":                         services.BuildPregnancyWeekView(services.ResolvePregnancyStatus(user, viewData.Today), language),
 		"CycleDayReference":                     viewData.CycleContext.CycleDayReference,
 		"CycleDayWarning":                       viewData.CycleContext.CycleDayWarning,
 		"LateCycle":                             viewData.CycleContext.LateCycle,

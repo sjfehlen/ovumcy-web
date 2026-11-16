@@ -249,7 +249,33 @@ func TestPregnancySurfacesRenderForADeclaredPregnancy(t *testing.T) {
 	if dashboard := pregnancyGET(t, ctx, "/dashboard"); !strings.Contains(dashboard, "data-dashboard-pregnancy") {
 		t.Fatal("expected the pregnancy card on the dashboard")
 	}
+	dashboard := pregnancyGET(t, ctx, "/dashboard")
+	if !strings.Contains(dashboard, "data-dashboard-pregnancy-week") || !strings.Contains(dashboard, "Roughly the size of:") {
+		t.Fatal("expected the week card with a size comparison on the dashboard")
+	}
 	if settings := pregnancyGET(t, ctx, "/settings"); !strings.Contains(settings, "data-settings-pregnancy-active") {
 		t.Fatal("expected the active pregnancy summary in settings")
+	}
+}
+
+// TestPregnancyOverviewCarriesTheWeeklySize proves the JSON overview names the
+// week's size comparison and length once the pregnancy reaches week 4, and
+// leaves both out before it.
+func TestPregnancyOverviewCarriesTheWeeklySize(t *testing.T) {
+	ctx := newSettingsSecurityTestContext(t, "pregnancy-size@example.com")
+
+	// 280 - 90 = 190 days to the due date puts today at gestational day 90: week 12.
+	start := startPregnancyJSON(t, ctx, url.Values{"due_date": {pregnancyTestDay(190)}})
+	_ = start.Body.Close()
+	overview := pregnancyGET(t, ctx, "/api/v1/stats/overview")
+	if !strings.Contains(overview, `"size_comparison":"lime"`) || !strings.Contains(overview, `"length_cm":5.4`) || !strings.Contains(overview, `"weeks":12`) {
+		t.Fatalf("expected week 12 to be a lime of 5.4 cm, got %s", overview)
+	}
+
+	early := startPregnancyJSON(t, ctx, url.Values{"due_date": {pregnancyTestDay(260)}})
+	_ = early.Body.Close()
+	overview = pregnancyGET(t, ctx, "/api/v1/stats/overview")
+	if strings.Contains(overview, "size_comparison") || strings.Contains(overview, "length_cm") {
+		t.Fatalf("week 2 has nothing to compare, got %s", overview)
 	}
 }

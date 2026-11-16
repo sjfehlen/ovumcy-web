@@ -552,6 +552,17 @@ components:
           type: integer
           minimum: 0
           maximum: 100
+        size_comparison:
+          type: string
+          description: >-
+            Stable English identifier of the everyday object the baby is about the
+            size of this week, for example `lime` or `watermelon`. Absent before
+            week 4. A rough average from a fixed table, not a measurement.
+        length_cm:
+          type: number
+          description: >-
+            Approximate length in centimetres matching `size_comparison`: crown to
+            rump up to week 19 and crown to heel from week 20. Absent before week 4.
       additionalProperties: false
 
     PregnancyStart:

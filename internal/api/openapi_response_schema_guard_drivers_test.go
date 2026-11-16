@@ -457,6 +457,15 @@ func openAPIResponseSchemaGuardTable() []openAPIResponseSchemaGuardEntry {
 		{operation: "PATCH /api/v1/users/current/reminders", drive: func(t *testing.T) (int, []byte) {
 			return newSchemaGuardOwner(t).send(t, http.MethodPatch, "/api/v1/users/current/reminders", map[string]any{"reminder_lead_days": 3})
 		}},
+		{operation: "PUT /api/v1/users/current/pregnancy", drive: func(t *testing.T) (int, []byte) {
+			return newSchemaGuardOwner(t).send(t, http.MethodPut, "/api/v1/users/current/pregnancy", map[string]any{"due_date": schemaGuardToday.AddDate(0, 0, 190).Format("2006-01-02")})
+		}},
+		{operation: "DELETE /api/v1/users/current/pregnancy", drive: func(t *testing.T) (int, []byte) {
+			owner := newSchemaGuardOwner(t)
+			status, body := owner.send(t, http.MethodPut, "/api/v1/users/current/pregnancy", map[string]any{"due_date": schemaGuardToday.AddDate(0, 0, 190).Format("2006-01-02")})
+			requireSchemaGuardStatus(t, "seed PUT /api/v1/users/current/pregnancy", status, body, http.StatusOK)
+			return owner.send(t, http.MethodDelete, "/api/v1/users/current/pregnancy", nil)
+		}},
 		{operation: "POST /api/v1/users/current/timezone", drive: func(t *testing.T) (int, []byte) {
 			return newSchemaGuardOwner(t).send(t, http.MethodPost, "/api/v1/users/current/timezone", map[string]any{"timezone": "Europe/Berlin"})
 		}},
