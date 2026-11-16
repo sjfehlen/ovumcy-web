@@ -236,6 +236,13 @@ func settingsWriteCases(fixture dayFormAccountFixture) []settingsWriteCase {
 		formCase("PATCH /api/v1/users/current/reminders", "the reminder window form", func(int) url.Values {
 			return url.Values{"reminder_lead_days": {"5"}}
 		}),
+		// The pregnancy is declared before it is ended: the table order is the sequence.
+		formCase("PUT /api/v1/users/current/pregnancy", "the pregnancy form", func(int) url.Values {
+			return url.Values{"due_date": {time.Now().UTC().AddDate(0, 0, 150).Format("2006-01-02")}}
+		}),
+		formCase("DELETE /api/v1/users/current/pregnancy", "the pregnancy end", func(int) url.Values {
+			return url.Values{}
+		}),
 		formCase("POST /api/v1/users/current/timezone", "the timezone sync", func(int) url.Values {
 			return url.Values{"timezone": {"Pacific/Auckland"}}
 		}),
@@ -624,6 +631,7 @@ func TestEveryRenderedSettingsWriteCarriesTheAccountBinding(t *testing.T) {
 	}{
 		{http.MethodPost, "/api/v1/users/current/webhook", url.Values{"webhook_url": {"https://ntfy.example.test/markup"}, "webhook_enabled": {"true"}, "webhook_notify_period": {"true"}}},
 		{http.MethodPost, "/api/v1/users/current/api-key", url.Values{"scope": {"read"}}},
+		{http.MethodPut, "/api/v1/users/current/pregnancy", url.Values{"due_date": {time.Now().UTC().AddDate(0, 0, 150).Format("2006-01-02")}}},
 		{http.MethodPost, "/api/v1/symptoms", url.Values{"name": {"Markup active"}, "icon": {"✨"}}},
 		{http.MethodPost, "/api/v1/symptoms", url.Values{"name": {"Markup archived"}, "icon": {"✨"}}},
 	} {
