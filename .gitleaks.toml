@@ -69,6 +69,8 @@ id = "generic-api-key"
       # generic-api-key flagged all 39 table rows only because the struct field is
       # named "FruitKey"; the value is a public translation key, not a credential.
       '''pregnancy\.fruit\.[a-z_]+''',
+      # Same table, same reason: the `DevKey: "pregnancy.week.<n>.dev"` message keys.
+      '''pregnancy\.week\.[0-9]+\.dev''',
       '''0123456789abcdef0123456789abcdef''', # testNotifySecretKey (internal/cli/notify_test.go)
       # NOT a secret: the HKDF info label that domain-separates the API key
       # authenticator's derived key (internal/security/api_key_mac.go). It is a
