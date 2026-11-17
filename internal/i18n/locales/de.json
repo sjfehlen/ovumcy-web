@@ -626,6 +626,8 @@
   "dashboard.hero.period_today": "Periode heute erwartet",
   "dashboard.hero.cycle_day_unit": "Tag deines Zyklus",
   "dashboard.hero.log_period": "Periode eintragen",
+  "dashboard.hero.period_day_unit": "Tag der Periode",
+  "dashboard.hero.edit_period": "Periode bearbeiten",
   "dashboard.week.title": "Diese Woche",
   "dashboard.ring.title": "Dein Zyklus",
   "dashboard.ring.day_of_cycle": "Zyklustag",

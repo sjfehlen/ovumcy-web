@@ -792,6 +792,8 @@
   "dashboard.hero.period_today": "Règles attendues aujourd'hui",
   "dashboard.hero.cycle_day_unit": "jour de votre cycle",
   "dashboard.hero.log_period": "Saisir les règles",
+  "dashboard.hero.period_day_unit": "jour des règles",
+  "dashboard.hero.edit_period": "Modifier les règles",
   "dashboard.week.title": "Cette semaine",
   "dashboard.ring.title": "Votre cycle",
   "dashboard.ring.day_of_cycle": "jour du cycle",

@@ -38,6 +38,10 @@ type DashboardOverview struct {
 	Countdown DashboardCountdown
 	Week      []DashboardWeekDay
 	Ring      DashboardPhaseRing
+	// PeriodDay is the 1-based day of the period in progress: the run of
+	// consecutively logged period days that ends today. It is 0 when today is not
+	// a logged period day, so it only ever reports a fact the owner recorded.
+	PeriodDay int
 }
 
 // DashboardCountdown is the days until the next period. Min and Max are equal for
@@ -100,6 +104,26 @@ func BuildDashboardOverview(cycleContext DashboardCycleContext, hero DashboardCy
 		Countdown: countdown,
 		Week:      buildDashboardWeek(cycleContext, countdown, logs, today, location),
 		Ring:      buildDashboardPhaseRing(hero),
+		PeriodDay: buildDashboardPeriodDay(logs, today, location),
+	}
+}
+
+// buildDashboardPeriodDay counts the consecutive logged period days ending today.
+// A day that is not logged as a period, today included, ends the run.
+func buildDashboardPeriodDay(logs []models.DailyLog, today time.Time, location *time.Location) int {
+	loggedPeriod := make(map[string]struct{}, len(logs))
+	for _, log := range logs {
+		if log.IsPeriod {
+			loggedPeriod[CalendarDay(log.Date, location).Format("2006-01-02")] = struct{}{}
+		}
+	}
+	day := 0
+	for {
+		key := AddCalendarDays(today, -day, location).Format("2006-01-02")
+		if _, ok := loggedPeriod[key]; !ok {
+			return day
+		}
+		day++
 	}
 }
 

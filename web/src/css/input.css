@@ -5620,6 +5620,96 @@
   box-shadow: var(--elevation-1);
 }
 
+/* Period in progress: the hero becomes a soft blush card with a hairline ring, a
+   light oversized day ordinal and a floral frame. Colours come from the phase
+   tokens, so light, dark and forced-colour themes follow them; the blooms are
+   decorative SVG shapes filled through classes (strict CSP: no inline style). */
+@utility dashboard-hero-period {
+  padding: 2rem 1rem 2.25rem;
+  background:
+    radial-gradient(circle at 50% 0%, rgb(var(--phase-menstrual) / 0.2), transparent 62%),
+    radial-gradient(circle at 50% 100%, rgb(var(--phase-ovulation) / 0.12), transparent 58%),
+    var(--surface-card);
+}
+
+@utility dashboard-hero-ring-period {
+  position: relative;
+  z-index: 1;
+  gap: 0.35rem;
+  width: min(15rem, 68vw);
+  border-width: 0.5rem;
+  border-color: rgb(var(--phase-menstrual) / 0.16);
+  box-shadow:
+    0 0 0 0.35rem rgb(var(--phase-menstrual) / 0.07),
+    var(--shadow-soft);
+}
+
+@utility dashboard-hero-number-period {
+  font-size: 4.75rem;
+  font-weight: 300;
+  letter-spacing: -0.04em;
+}
+
+@utility dashboard-hero-ordinal {
+  margin-inline-start: 0.1rem;
+  font-size: 1.6rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--text-muted);
+}
+
+@utility dashboard-hero-unit-period {
+  max-width: 11rem;
+  font-size: 1.15rem;
+  color: var(--text-primary);
+}
+
+@utility dashboard-hero-action-period {
+  margin-top: 0.5rem;
+  min-height: 2.25rem;
+  padding: 0.3rem 1.5rem;
+  background: rgb(var(--phase-menstrual));
+  color: var(--btn-primary-ink);
+}
+
+@utility dashboard-bloom {
+  position: absolute;
+  top: 0.5rem;
+  z-index: 0;
+  width: 6.5rem;
+  height: 6.5rem;
+  pointer-events: none;
+
+  @media (min-width: 640px) {
+    width: 8.5rem;
+    height: 8.5rem;
+  }
+}
+
+@utility dashboard-bloom-start {
+  inset-inline-start: 0.25rem;
+}
+
+@utility dashboard-bloom-end {
+  inset-inline-end: 0.25rem;
+}
+
+@utility dashboard-bloom-leaf {
+  fill: rgb(var(--phase-follicular) / 0.38);
+}
+
+@utility dashboard-bloom-petal {
+  fill: rgb(var(--phase-menstrual) / 0.4);
+}
+
+@utility dashboard-bloom-petal-deep {
+  fill: rgb(var(--phase-menstrual) / 0.6);
+}
+
+@utility dashboard-bloom-heart {
+  fill: rgb(var(--phase-menstrual) / 0.85);
+}
+
 @utility dashboard-week {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));

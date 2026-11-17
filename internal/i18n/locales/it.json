@@ -626,6 +626,8 @@
   "dashboard.hero.period_today": "Ciclo previsto oggi",
   "dashboard.hero.cycle_day_unit": "giorno del tuo ciclo",
   "dashboard.hero.log_period": "Registra il ciclo",
+  "dashboard.hero.period_day_unit": "giorno del ciclo",
+  "dashboard.hero.edit_period": "Modifica il ciclo",
   "dashboard.week.title": "Questa settimana",
   "dashboard.ring.title": "Il tuo ciclo",
   "dashboard.ring.day_of_cycle": "giorno del ciclo",

@@ -39,6 +39,40 @@
       <p class="journal-muted text-xs">{{t .Messages "pregnancy.week_disclaimer"}}</p>
     </div>
     {{end}}
+    {{else if gt .Overview.PeriodDay 0}}
+    {{/* A period in progress: the hero names the day of the period instead of the
+         countdown, which is about the next one. The day is the run of consecutively
+         logged period days ending today, so it states only what was recorded. The
+         blooms are decoration (SVG presentation attributes, no inline style). */}}
+    <div class="card dashboard-hero dashboard-hero-period" data-dashboard-period-hero>
+      <svg class="dashboard-bloom dashboard-bloom-start" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+        <ellipse class="dashboard-bloom-leaf" cx="22" cy="40" rx="5" ry="16" transform="rotate(-50 22 40)"></ellipse>
+        <ellipse class="dashboard-bloom-leaf" cx="40" cy="22" rx="5" ry="16" transform="rotate(-20 40 22)"></ellipse>
+        <ellipse class="dashboard-bloom-leaf" cx="30" cy="102" rx="5" ry="15" transform="rotate(40 30 102)"></ellipse>
+        <circle class="dashboard-bloom-petal" cx="62" cy="52" r="26"></circle>
+        <circle class="dashboard-bloom-petal-deep" cx="62" cy="52" r="17"></circle>
+        <circle class="dashboard-bloom-heart" cx="62" cy="52" r="8"></circle>
+        <circle class="dashboard-bloom-petal" cx="36" cy="88" r="20"></circle>
+        <circle class="dashboard-bloom-petal-deep" cx="36" cy="88" r="12"></circle>
+      </svg>
+      <svg class="dashboard-bloom dashboard-bloom-end" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+        <ellipse class="dashboard-bloom-leaf" cx="98" cy="40" rx="5" ry="16" transform="rotate(50 98 40)"></ellipse>
+        <ellipse class="dashboard-bloom-leaf" cx="80" cy="22" rx="5" ry="16" transform="rotate(20 80 22)"></ellipse>
+        <ellipse class="dashboard-bloom-leaf" cx="92" cy="104" rx="5" ry="15" transform="rotate(-40 92 104)"></ellipse>
+        <circle class="dashboard-bloom-petal" cx="60" cy="48" r="22"></circle>
+        <circle class="dashboard-bloom-petal-deep" cx="60" cy="48" r="14"></circle>
+        <circle class="dashboard-bloom-heart" cx="60" cy="48" r="6"></circle>
+        <circle class="dashboard-bloom-petal" cx="84" cy="86" r="18"></circle>
+        <circle class="dashboard-bloom-petal-deep" cx="84" cy="86" r="11"></circle>
+      </svg>
+      <div class="dashboard-hero-ring dashboard-hero-ring-period">
+        <p class="dashboard-hero-number dashboard-hero-number-period">{{.Overview.PeriodDay}}<span class="dashboard-hero-ordinal">{{ordinalSuffix .Lang .Overview.PeriodDay}}</span></p>
+        <p class="dashboard-hero-unit dashboard-hero-unit-period">{{t .Messages "dashboard.hero.period_day_unit"}}</p>
+        {{range .Overview.Week}}{{if .IsToday}}
+        <a href="/calendar?month={{printf "%.7s" .ISODate}}&day={{.ISODate}}&edit=1" class="dashboard-hero-action dashboard-hero-action-period">{{t $.Messages "dashboard.hero.edit_period"}}</a>
+        {{end}}{{end}}
+      </div>
+    </div>
     {{else}}
     <div class="card dashboard-hero">
       <div class="dashboard-hero-ring">

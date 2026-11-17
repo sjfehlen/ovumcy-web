@@ -626,6 +626,8 @@
   "dashboard.hero.period_today": "Period expected today",
   "dashboard.hero.cycle_day_unit": "day of your cycle",
   "dashboard.hero.log_period": "Log period",
+  "dashboard.hero.period_day_unit": "day of period",
+  "dashboard.hero.edit_period": "Edit period",
   "dashboard.week.title": "This week",
   "dashboard.ring.title": "Your cycle",
   "dashboard.ring.day_of_cycle": "day of cycle",

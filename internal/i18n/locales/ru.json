@@ -636,6 +636,8 @@
   "dashboard.hero.period_today": "Менструация ожидается сегодня",
   "dashboard.hero.cycle_day_unit": "день вашего цикла",
   "dashboard.hero.log_period": "Отметить менструацию",
+  "dashboard.hero.period_day_unit": "день менструации",
+  "dashboard.hero.edit_period": "Изменить менструацию",
   "dashboard.week.title": "Эта неделя",
   "dashboard.ring.title": "Ваш цикл",
   "dashboard.ring.day_of_cycle": "день цикла",
