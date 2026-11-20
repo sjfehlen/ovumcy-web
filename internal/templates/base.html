@@ -90,12 +90,14 @@
       {{- $todayActive := or (isActiveRoute .CurrentPath "/dashboard") (isActiveRoute .CurrentPath "/")}}
       {{- $calendarActive := isActiveRoute .CurrentPath "/calendar"}}
       {{- $insightsActive := isActiveRoute .CurrentPath "/stats"}}
+      {{- $pregnancyActive := isActiveRoute .CurrentPath "/pregnancy"}}
       {{- $settingsActive := isActiveRoute .CurrentPath "/settings"}}
       <div class="container-main pb-4">
         <nav class="hidden items-center gap-2 sm:flex" aria-label="{{t .Messages "a11y.nav.primary"}}">
           <a href="/dashboard" class="nav-link {{if $todayActive}}nav-link-active{{end}}" data-nav-link="today" data-nav-link-key="nav.today" {{if $todayActive}}aria-current="page"{{end}}>{{t .Messages "nav.today"}}</a>
           <a href="/calendar" class="nav-link {{if $calendarActive}}nav-link-active{{end}}" data-nav-link="calendar" data-nav-link-key="nav.calendar" {{if $calendarActive}}aria-current="page"{{end}}>{{t .Messages "nav.calendar"}}</a>
           <a href="/stats" class="nav-link {{if $insightsActive}}nav-link-active{{end}}" data-nav-link="insights" data-nav-link-key="nav.insights" {{if $insightsActive}}aria-current="page"{{end}}>{{t .Messages "nav.insights"}}</a>
+          {{if .PregnancyTab}}<a href="/pregnancy" class="nav-link {{if $pregnancyActive}}nav-link-active{{end}}" data-nav-link="pregnancy" data-nav-link-key="nav.pregnancy" {{if $pregnancyActive}}aria-current="page"{{end}}>{{t .Messages "nav.pregnancy"}}</a>{{end}}
 
           <!-- Settings is reached through the account chip alone: a gear beside it led to the same page.
                Being the only desktop route to settings, the chip also carries the section's active
@@ -153,11 +155,13 @@
     {{- $todayActive := or (isActiveRoute .CurrentPath "/dashboard") (isActiveRoute .CurrentPath "/")}}
     {{- $calendarActive := isActiveRoute .CurrentPath "/calendar"}}
     {{- $insightsActive := isActiveRoute .CurrentPath "/stats"}}
+      {{- $pregnancyActive := isActiveRoute .CurrentPath "/pregnancy"}}
     {{- $settingsActive := isActiveRoute .CurrentPath "/settings"}}
     <nav class="mobile-tabbar sm:hidden" aria-label="{{t .Messages "a11y.nav.tabbar"}}">
       <a href="/dashboard" class="mobile-tabbar-link {{if $todayActive}}mobile-tabbar-link-active{{end}}" data-nav-link="today" data-nav-link-key="nav.today" {{if $todayActive}}aria-current="page"{{end}}>{{t .Messages "nav.today"}}</a>
       <a href="/calendar" class="mobile-tabbar-link {{if $calendarActive}}mobile-tabbar-link-active{{end}}" data-nav-link="calendar" data-nav-link-key="nav.calendar" {{if $calendarActive}}aria-current="page"{{end}}>{{t .Messages "nav.calendar"}}</a>
       <a href="/stats" class="mobile-tabbar-link {{if $insightsActive}}mobile-tabbar-link-active{{end}}" data-nav-link="insights" data-nav-link-key="nav.insights" {{if $insightsActive}}aria-current="page"{{end}}>{{t .Messages "nav.insights"}}</a>
+      {{if .PregnancyTab}}<a href="/pregnancy" class="mobile-tabbar-link {{if $pregnancyActive}}mobile-tabbar-link-active{{end}}" data-nav-link="pregnancy" data-nav-link-key="nav.pregnancy" {{if $pregnancyActive}}aria-current="page"{{end}}>{{t .Messages "nav.pregnancy"}}</a>{{end}}
       <a href="/settings" class="mobile-tabbar-link mobile-tabbar-icon {{if $settingsActive}}mobile-tabbar-link-active{{end}}" data-nav-link="settings" data-nav-link-key="nav.settings" aria-label="{{t .Messages "nav.settings"}}" title="{{t .Messages "nav.settings"}}" {{if $settingsActive}}aria-current="page"{{end}}><span class="mobile-tabbar-icon-glyph" aria-hidden="true">{{template "icon" "settings"}}</span></a>
     </nav>
     {{end}}

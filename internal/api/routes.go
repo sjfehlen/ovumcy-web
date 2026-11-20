@@ -205,6 +205,7 @@ func registerPageRoutes(app *fiber.App, handler *Handler) {
 	// SafeRequestLogPath masks. Per-IP rate-limited in cmd/ovumcy/main.go.
 	app.Get(calendarFeedRoutePath, handler.ServeCalendarFeed)
 	app.Get("/stats", handler.AuthRequired, handler.ShowStats)
+	app.Get("/pregnancy", handler.AuthRequired, handler.ShowPregnancy)
 	app.Get("/settings", handler.AuthRequired, handler.ShowSettings)
 	app.Get("/settings/2fa", handler.refuseHEADOnShownOnceSurface, handler.AuthRequired, handler.ShowTOTPSetupPage)
 	// One-time reveal of the freshly generated/rotated .ics subscribe URL. The

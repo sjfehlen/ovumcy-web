@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v3"
+	"github.com/ovumcy/ovumcy-web/internal/models"
 	"github.com/ovumcy/ovumcy-web/internal/services"
 )
 
@@ -102,6 +103,12 @@ func (handler *Handler) withTemplateDefaults(c fiber.Ctx, data fiber.Map) fiber.
 		data["DayFormAccount"] = handler.renderedAccountBinding(c, data)
 	}
 
+	// A declared pregnancy gets its own tab beside Calendar and Insights; the
+	// layout reads this one flag so no page builds it for itself.
+	if _, ok := data["PregnancyTab"]; !ok {
+		data["PregnancyTab"] = pregnancyTabVisible(data["CurrentUser"])
+	}
+
 	if _, ok := data["AssetVersion"]; !ok {
 		data["AssetVersion"] = handler.assetVersion
 	}
@@ -127,4 +134,16 @@ func currentPathWithQuery(c fiber.Ctx) string {
 		return c.Path()
 	}
 	return path
+}
+
+// pregnancyTabVisible reports whether the signed-in account has a declared
+// pregnancy, the one condition under which the layout shows the Pregnancy tab.
+func pregnancyTabVisible(currentUser any) bool {
+	switch user := currentUser.(type) {
+	case *models.User:
+		return user != nil && user.PregnancyDueDate != nil && !user.PregnancyDueDate.IsZero()
+	case models.User:
+		return user.PregnancyDueDate != nil && !user.PregnancyDueDate.IsZero()
+	}
+	return false
 }

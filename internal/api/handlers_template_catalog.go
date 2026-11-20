@@ -10,6 +10,7 @@ var pageTemplates = []string{
 	"dashboard",
 	"calendar",
 	"stats",
+	"pregnancy",
 	"settings",
 	"settings_2fa",
 	"calendar_feed_reveal",
