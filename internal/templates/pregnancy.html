@@ -5,7 +5,7 @@
     <p class="journal-muted mt-1 text-sm">{{t .Messages "pregnancy.page.subtitle"}}</p>
   </div>
 
-  <div class="card dashboard-hero dashboard-pregnancy" data-pregnancy-summary>
+  <div class="card dashboard-hero dashboard-pregnancy">
     <div class="dashboard-hero-ring">
       <p class="dashboard-hero-number">{{.Pregnancy.Weeks}}<span class="dashboard-pregnancy-weeks-unit">{{t .Messages "pregnancy.weeks_short"}}</span>{{if gt .Pregnancy.DaysIntoWeek 0}} {{.Pregnancy.DaysIntoWeek}}<span class="dashboard-pregnancy-weeks-unit">{{t .Messages "pregnancy.days_short"}}</span>{{end}}</p>
       <p class="dashboard-hero-unit">{{printf (t .Messages "pregnancy.trimester") .Pregnancy.Trimester}}</p>
@@ -15,11 +15,11 @@
     </div>
   </div>
 
-  <div class="card space-y-2" data-pregnancy-journal>
+  <div class="card space-y-2">
     <h2 class="journal-subtitle">{{t .Messages "pregnancy.page.journal_title"}}</h2>
     {{if .PregnancyPage.Summary.DaysLogged}}
-    <p class="field-label" data-pregnancy-journal-days="{{.PregnancyPage.Summary.DaysLogged}}">{{printf (t .Messages "pregnancy.page.days_logged") .PregnancyPage.Summary.DaysLogged}}</p>
-    {{if .PregnancyPage.Summary.MoodDays}}<p class="field-label" data-pregnancy-journal-mood>{{printf (t .Messages "pregnancy.page.mood_average") .PregnancyPage.Summary.MoodAverageText}}</p>{{end}}
+    <p class="field-label">{{printf (t .Messages "pregnancy.page.days_logged") .PregnancyPage.Summary.DaysLogged}}</p>
+    {{if .PregnancyPage.Summary.MoodDays}}<p class="field-label">{{printf (t .Messages "pregnancy.page.mood_average") .PregnancyPage.Summary.MoodAverageText}}</p>{{end}}
     {{else}}
     <p class="text-sm journal-muted" data-pregnancy-journal-empty>{{t .Messages "pregnancy.page.journal_empty"}}</p>
     {{end}}
@@ -36,7 +36,7 @@
           · {{printf (t $.Messages "pregnancy.size_label") (t $.Messages .FruitKey)}} · {{printf (t $.Messages .Length.UnitKey) .Length.Value}}
         </p>
         {{if ne .State "upcoming"}}
-        <p class="text-sm journal-muted" data-pregnancy-week-journal>
+        <p class="text-sm journal-muted">
           {{printf (t $.Messages "pregnancy.page.days_logged") .DaysLogged}}{{if .MoodDays}} · {{printf (t $.Messages "pregnancy.page.mood_average") .MoodAverageText}}{{end}}
         </p>
         {{if .MoodDays}}<progress class="dashboard-pregnancy-progress" max="5" value="{{.MoodAverage}}" aria-label="{{printf (t $.Messages "pregnancy.page.mood_average") .MoodAverageText}}">{{.MoodAverageText}}</progress>{{end}}

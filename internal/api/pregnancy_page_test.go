@@ -72,3 +72,40 @@ func TestPregnancyTabAndPageFollowTheDeclaredPregnancy(t *testing.T) {
 		t.Fatal("the timeline starts at the first sized week")
 	}
 }
+
+// The page totals what was logged since the pregnancy began, overall and per
+// week, and leaves out days from before it.
+func TestPregnancyPageTotalsTheJournalSincePregnancyBegan(t *testing.T) {
+	app, database := newOnboardingTestApp(t)
+	user := createOnboardingTestUser(t, database, "pregnancy-journal@example.com", "StrongPass1", true)
+	authCookie := loginAndExtractAuthCookie(t, app, user.Email, "StrongPass1")
+
+	today := services.DateAtLocation(time.Now().UTC(), time.UTC)
+	due := services.AddCalendarDays(today, services.PregnancyTermDays-36, time.UTC)
+	if err := database.Model(&models.User{}).Where("id = ?", user.ID).Update("pregnancy_due_date", due).Error; err != nil {
+		t.Fatalf("declare pregnancy: %v", err)
+	}
+	start := services.AddCalendarDays(due, -services.PregnancyTermDays, time.UTC)
+	for _, entry := range []models.DailyLog{
+		{UserID: user.ID, Date: services.AddCalendarDays(start, -2, time.UTC), Mood: 5}, // before: ignored
+		{UserID: user.ID, Date: services.AddCalendarDays(start, 29, time.UTC), Mood: 2}, // week 4
+		{UserID: user.ID, Date: services.AddCalendarDays(start, 30, time.UTC), Mood: 4}, // week 4
+	} {
+		if err := database.Create(&entry).Error; err != nil {
+			t.Fatalf("seed log: %v", err)
+		}
+	}
+
+	response := getPageWithCookie(t, app, "/pregnancy", authCookie)
+	assertStatusCode(t, response, http.StatusOK)
+	page := mustReadBodyString(t, response.Body)
+	if strings.Contains(page, "data-pregnancy-journal-empty") {
+		t.Fatal("two days are logged: the empty journal wording must not render")
+	}
+	if got := strings.Count(page, "Days logged: 2"); got != 2 { // overall + week 4
+		t.Fatalf("expected the total and week 4 to read %q, found %d", "Days logged: 2", got)
+	}
+	if got := strings.Count(page, "Average mood: 3"); got != 3 { // total, week 4 and its bar label
+		t.Fatalf("expected the total, week 4 and its bar label to read %q, found %d", "Average mood: 3", got)
+	}
+}
